@@ -1,6 +1,7 @@
 package cucumber
 
 import (
+	"fmt"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -10,6 +11,8 @@ import (
 var (
 	GlobalContext = Context{Steps: []StepDefinition{}}
 	T             *testing.T
+
+	errNoMatchingStepFns = fmt.Errorf("no functions matched step.")
 )
 
 func Given(match string, fn interface{}) {
@@ -56,13 +59,22 @@ func (c *Context) And(match string, fn interface{}) {
 	c.addStep(match, fn)
 }
 
-func (c *Context) Execute(t *testing.T, line string, arg interface{}) error {
+func (c *Context) Execute(t *testing.T, line string, arg interface{}) (bool, error) {
 	T = t
 	c.T = t
+
+	found := false
 	for _, step := range c.Steps {
-		step.CallIfMatch(c, t, line, arg)
+		f, err := step.CallIfMatch(c, t, line, arg)
+		if err != nil {
+			return f, err
+		}
+		if f {
+			found = true
+		}
 	}
-	return nil
+
+	return found, nil
 }
 
 type StepDefinition struct {
@@ -70,7 +82,7 @@ type StepDefinition struct {
 	Function reflect.Value
 }
 
-func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, arg interface{}) {
+func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, arg interface{}) (bool, error) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
 		match = match[1:] // discard full line match
 
@@ -88,7 +100,8 @@ func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, a
 			}
 		}
 		if numArgs != t.NumIn() { // function has different arity
-			return // TODO raise error
+			return true, fmt.Errorf("matcher function has different arity %d != %d",
+				numArgs, t.NumIn())
 		}
 
 		values := make([]reflect.Value, numArgs)
@@ -136,5 +149,7 @@ func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, a
 		}
 
 		s.Function.Call(values)
+		return true, nil
 	}
+	return false, nil
 }
