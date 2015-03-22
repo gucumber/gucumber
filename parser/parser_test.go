@@ -49,13 +49,13 @@ Feature: Refund item
 	assert.NoError(t, err)
 	assert.Equal(t, 1, len(features))
 	assert.Equal(t, "Refund item", features[0].Title)
-	assert.Equal(t, "tag1", features[0].Tags[0])
-	assert.Equal(t, "tag2", features[0].Tags[1])
+	assert.Equal(t, "@tag1", features[0].Tags[0])
+	assert.Equal(t, "@tag2", features[0].Tags[1])
 	assert.Equal(t, 1, len(features[0].Scenarios))
 	assert.Equal(t, "A multiline description of the Feature\nthat can contain any text like\nRules:\n- a\n- b", features[0].Description)
 	assert.Equal(t, 4, len(features[0].Scenarios[0].Steps))
-	assert.Equal(t, "tag1", features[0].Scenarios[0].Tags[0])
-	assert.Equal(t, "tag2", features[0].Scenarios[0].Tags[1])
+	assert.Equal(t, "@tag1", features[0].Scenarios[0].Tags[0])
+	assert.Equal(t, "@tag2", features[0].Scenarios[0].Tags[1])
 	assert.Equal(t, "Given", features[0].Scenarios[0].Steps[0].Type)
 	assert.Equal(t, "Jeff has bought a microwave for $100", features[0].Scenarios[0].Steps[0].Text)
 	assert.Equal(t, "And", features[0].Scenarios[0].Steps[1].Type)
@@ -101,7 +101,7 @@ Feature: Parsing multiple scenarios
 `
 	features, err := Parse(s)
 	assert.NoError(t, err)
-	assert.Equal(t, "tag_on_background", features[0].Background.Tags[0])
+	assert.Equal(t, "@tag_on_background", features[0].Background.Tags[0])
 	assert.Equal(t, "there is some background", features[0].Background.Steps[0].Text)
 	assert.Equal(t, 2, len(features[0].Scenarios))
 }
@@ -132,8 +132,8 @@ func TestTagParsing(t *testing.T) {
 	f, err := Parse("@tag1   @tag2@tag3\nFeature: Tag parsing")
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Tags))
-	assert.Equal(t, "tag1", f[0].Tags[0])
-	assert.Equal(t, "tag2@tag3", f[0].Tags[1])
+	assert.Equal(t, "@tag1", f[0].Tags[0])
+	assert.Equal(t, "@tag2@tag3", f[0].Tags[1])
 }
 
 func TestBacktrackingCommentsAtEnd(t *testing.T) {

@@ -302,7 +302,7 @@ func (p *parser) consumeTags() ([]Tag, error) {
 		if t[0:1] != "@" {
 			return nil, p.err("invalid tag %q", t)
 		}
-		tags = append(tags, Tag(t[1:]))
+		tags = append(tags, Tag(t))
 	}
 
 	return tags, nil
