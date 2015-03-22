@@ -236,7 +236,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 	switch parts[0] {
 	case p.translations.Given, p.translations.Then,
 		p.translations.When, p.translations.And:
-		var arg StepArgument
+		var arg interface{}
 		if len(parts) < 2 {
 			return p.err("expected step text after %q", parts[0])
 		}
@@ -258,20 +258,26 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 	return nil
 }
 
-func (p *parser) consumeIndentedData(scenarioIndent int) StepArgument {
-	startIndent, quoted, data := -1, false, []string{}
+func (p *parser) consumeIndentedData(scenarioIndent int) interface{} {
+	var stringData []string
+	var tabData [][]string
+	startIndent, quoted := -1, false
 	for p.nextLine() {
+		var line string
+		var indent int
 		if startIndent == -1 { // first line
-			line, indent := p.lineStripped()
+			line, indent = p.lineStripped()
 			startIndent = indent
 
 			if line == `"""` {
 				quoted = true // this is a docstring data block
+				stringData = []string{}
+				continue // ignore this from data
 			} else {
-				data = append(data, line)
+				tabData = [][]string{}
 			}
 		} else {
-			line := p.line()
+			line = p.line()
 			if len(line) <= startIndent {
 				// not enough text, not part of indented data
 				p.unread()
@@ -287,11 +293,26 @@ func (p *parser) consumeIndentedData(scenarioIndent int) StepArgument {
 			if quoted && line == `"""` { // end quote on docstring block
 				break
 			}
-			data = append(data, line)
+
+		}
+
+		if quoted {
+			stringData = append(stringData, line)
+		} else {
+			row := strings.Split(line, "|")
+			row = row[1 : len(row)-1]
+			for i, c := range row {
+				row[i] = strings.TrimSpace(c)
+			}
+			tabData = append(tabData, row)
 		}
 
 	}
-	return StepArgument(strings.Join(data, "\n"))
+
+	if quoted {
+		return strings.Join(stringData, "\n")
+	}
+	return tabData
 }
 
 func (p *parser) consumeTags() ([]Tag, error) {

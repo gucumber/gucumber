@@ -181,7 +181,7 @@ Feature: Scenario outlines
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, "| foo | bar |\n| 1   | 2   |\n| 3   | 4   |", f[0].Scenarios[0].Examples)
+	assert.Equal(t, [][]string{[]string{"foo", "bar"}, []string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Examples)
 }
 
 func TestStepArguments(t *testing.T) {
@@ -193,8 +193,8 @@ Feature: Step arguments
                           | 3   | 4   |
     And some docstring
       """
-      hello
-      world
+       hello
+       world
       """
 
   Scenario: Scenario 2
@@ -203,8 +203,8 @@ Feature: Step arguments
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, "| 1   | 2   |\n| 3   | 4   |", f[0].Scenarios[0].Steps[0].Argument)
-	assert.Equal(t, "hello\nworld", f[0].Scenarios[0].Steps[1].Argument)
+	assert.Equal(t, [][]string{[]string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Steps[0].Argument)
+	assert.Equal(t, " hello\n world", f[0].Scenarios[0].Steps[1].Argument)
 }
 
 func TestFailureNoFeature(t *testing.T) {

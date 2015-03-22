@@ -12,17 +12,19 @@ type Scenario struct {
 	Title    string
 	Tags     []Tag
 	Steps    []Step
-	Examples StepArgument
+	Examples interface{}
 }
 
 type Step struct {
 	Type     StepType
 	Text     string
-	Argument StepArgument
+	Argument interface{}
 }
 
-type StepType string
+type StringData string
 
-type StepArgument string
+type TabularData [][]string
+
+type StepType string
 
 type Tag string
