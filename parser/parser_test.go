@@ -209,22 +209,22 @@ Feature: Step arguments
 
 func TestFailureNoFeature(t *testing.T) {
 	_, err := Parse("")
-	assert.EqualError(t, err, `parse error (L1): no features parsed.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:1): no features parsed.`)
 }
 
 func TestTagWithoutFeature(t *testing.T) {
 	_, err := Parse("@tag")
-	assert.EqualError(t, err, `parse error (L1): tags not applied to feature.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:1): tags not applied to feature.`)
 }
 
 func TestFailureExpectingFeature(t *testing.T) {
 	_, err := Parse("@tag\n@tag")
-	assert.EqualError(t, err, `parse error (L2): expected "Feature:", found "@tag".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:2): expected "Feature:", found "@tag".`)
 }
 
 func TestFailureInvalidTag(t *testing.T) {
 	_, err := Parse("@tag tag")
-	assert.EqualError(t, err, `parse error (L1): invalid tag "tag".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:1): invalid tag "tag".`)
 }
 
 func TestFailureDescriptionAfterTags(t *testing.T) {
@@ -238,7 +238,7 @@ Feature: Descriptions after tags
     Then something happens
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L4): illegal description text after tags.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:4): illegal description text after tags.`)
 }
 
 func TestFailureDescriptionAfterScenario(t *testing.T) {
@@ -255,7 +255,7 @@ Feature: Descriptions after scenario
     Then something happens
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L7): illegal description text after scenario.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:7): illegal description text after scenario.`)
 }
 
 func TestFailureMultipleBackgrounds(t *testing.T) {
@@ -268,7 +268,7 @@ Feature: Multiple backgrounds
     Given two
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L6): multiple backgrounds not allowed.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:6): multiple backgrounds not allowed.`)
 }
 
 func TestFailureBackgroundAfterScenario(t *testing.T) {
@@ -282,7 +282,7 @@ Feature: Background after scenario
     Given it's after a scenario
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L7): illegal background after scenario.`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:7): illegal background after scenario.`)
 }
 
 func TestFailureInvalidStep(t *testing.T) {
@@ -292,7 +292,7 @@ Feature: Invalid steps
     Invalid step
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L4): illegal step prefix "Invalid".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:4): illegal step prefix "Invalid".`)
 }
 
 func TestFailureNoStepText(t *testing.T) {
@@ -302,7 +302,7 @@ Feature: No step text
     Given
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L4): expected step text after "Given".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:4): expected step text after "Given".`)
 }
 
 func TestFailureInvalidTagOnScenario(t *testing.T) {
@@ -313,7 +313,7 @@ Feature: Invalid tag on scenario
     Given a scenario
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L3): invalid tag "tags".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:3): invalid tag "tags".`)
 
 }
 
@@ -326,5 +326,5 @@ Feature: Invalid background
     Given a scenario
 `
 	_, err := Parse(s)
-	assert.EqualError(t, err, `parse error (L4): illegal step prefix "Invalid".`)
+	assert.EqualError(t, err, `parse error (<unknown>.feature:4): illegal step prefix "Invalid".`)
 }

@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"path/filepath"
 	"strings"
 )
 
@@ -12,14 +13,16 @@ type parser struct {
 	lineNo       int
 	lastLine     int
 	started      bool
+	filename     string
 }
 
-func Parse(data string) ([]Feature, error) {
+func ParseFilename(data, filename string) ([]Feature, error) {
 	lines := strings.Split(data, "\n")
 	p := parser{
 		lines:        lines,
 		features:     []Feature{},
 		translations: Translations[LANG_EN],
+		filename:     filename,
 	}
 	if err := p.parse(); err != nil {
 		return nil, err
@@ -30,12 +33,20 @@ func Parse(data string) ([]Feature, error) {
 	return p.features, nil
 }
 
+func Parse(data string) ([]Feature, error) {
+	return ParseFilename(data, "")
+}
+
 func (p parser) err(msg string, args ...interface{}) error {
 	l := p.lineNo + 1
 	if l > len(p.lines) {
 		l = len(p.lines)
 	}
-	return fmt.Errorf("parse error (L%d): %s.", l, fmt.Sprintf(msg, args...))
+	if p.filename == "" {
+		p.filename = "<unknown>.feature"
+	}
+	return fmt.Errorf("parse error (%s:%d): %s.",
+		filepath.Base(p.filename), l, fmt.Sprintf(msg, args...))
 }
 
 func (p *parser) line() string {
