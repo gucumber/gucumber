@@ -8,7 +8,7 @@ import (
 )
 
 var (
-	GlobalContext = Context{Steps: stepDefinitionList{}}
+	GlobalContext = Context{Steps: []StepDefinition{}}
 	T             *testing.T
 )
 
@@ -29,24 +29,31 @@ func And(match string, fn interface{}) {
 }
 
 type Context struct {
-	Steps stepDefinitionList
+	Steps []StepDefinition
 	T     *testing.T
 }
 
+func (c *Context) addStep(match string, fn interface{}) {
+	c.Steps = append(c.Steps, StepDefinition{
+		Matcher:  regexp.MustCompile(match),
+		Function: reflect.ValueOf(fn),
+	})
+}
+
 func (c *Context) Given(match string, fn interface{}) {
-	c.Steps.add(match, fn)
+	c.addStep(match, fn)
 }
 
 func (c *Context) Then(match string, fn interface{}) {
-	c.Steps.add(match, fn)
+	c.addStep(match, fn)
 }
 
 func (c *Context) When(match string, fn interface{}) {
-	c.Steps.add(match, fn)
+	c.addStep(match, fn)
 }
 
 func (c *Context) And(match string, fn interface{}) {
-	c.Steps.add(match, fn)
+	c.addStep(match, fn)
 }
 
 func (c *Context) Execute(line string, arg interface{}) error {
@@ -65,8 +72,6 @@ type StepDefinition struct {
 	Matcher  *regexp.Regexp
 	Function reflect.Value
 }
-
-type stepDefinitionList []StepDefinition
 
 func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
@@ -110,11 +115,4 @@ func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 
 		s.Function.Call(values)
 	}
-}
-
-func (s *stepDefinitionList) add(match string, fn interface{}) {
-	*s = append(*s, StepDefinition{
-		Matcher:  regexp.MustCompile(match),
-		Function: reflect.ValueOf(fn),
-	})
 }
