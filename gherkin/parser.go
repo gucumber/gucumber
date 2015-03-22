@@ -251,7 +251,8 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 		s := Step{Type: StepType(parts[0]), Text: parts[1], Argument: arg}
 		scenario.Steps = append(scenario.Steps, s)
 	case p.translations.Examples + ":":
-		scenario.Examples = p.consumeIndentedData(indent)
+		ex := p.consumeIndentedData(indent).(TabularData)
+		scenario.Examples = ex
 	default:
 		return p.err("illegal step prefix %q", parts[0])
 	}
@@ -260,7 +261,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 
 func (p *parser) consumeIndentedData(scenarioIndent int) interface{} {
 	var stringData []string
-	var tabData [][]string
+	var tabData TabularData
 	startIndent, quoted := -1, false
 	for p.nextLine() {
 		var line string
@@ -274,7 +275,7 @@ func (p *parser) consumeIndentedData(scenarioIndent int) interface{} {
 				stringData = []string{}
 				continue // ignore this from data
 			} else {
-				tabData = [][]string{}
+				tabData = TabularData{}
 			}
 		} else {
 			line = p.line()

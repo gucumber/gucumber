@@ -181,7 +181,7 @@ Feature: Scenario outlines
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, [][]string{[]string{"foo", "bar"}, []string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Examples)
+	assert.Equal(t, TabularData{[]string{"foo", "bar"}, []string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Examples)
 }
 
 func TestStepArguments(t *testing.T) {
@@ -203,7 +203,7 @@ Feature: Step arguments
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, [][]string{[]string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Steps[0].Argument)
+	assert.Equal(t, TabularData{[]string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Steps[0].Argument)
 	assert.Equal(t, " hello\n world", f[0].Scenarios[0].Steps[1].Argument)
 }
 
