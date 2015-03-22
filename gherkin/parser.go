@@ -6,16 +6,6 @@ import (
 	"strings"
 )
 
-type parser struct {
-	translations Translation
-	features     []Feature
-	lines        []string
-	lineNo       int
-	lastLine     int
-	started      bool
-	filename     string
-}
-
 func ParseFilename(data, filename string) ([]Feature, error) {
 	lines := strings.Split(data, "\n")
 	p := parser{
@@ -35,6 +25,16 @@ func ParseFilename(data, filename string) ([]Feature, error) {
 
 func Parse(data string) ([]Feature, error) {
 	return ParseFilename(data, "")
+}
+
+type parser struct {
+	translations Translation
+	features     []Feature
+	lines        []string
+	lineNo       int
+	lastLine     int
+	started      bool
+	filename     string
 }
 
 func (p parser) err(msg string, args ...interface{}) error {
