@@ -65,6 +65,7 @@ func (c *Context) Execute(line string, arg interface{}) error {
 
 func (c *Context) ExecuteTest(t *testing.T, line string, arg interface{}) {
 	T = t
+	c.T = t
 	c.Execute(line, arg)
 }
 
@@ -84,44 +85,52 @@ func (s *StepDefinition) CallIfMatch(c *Context, line string, arg interface{}) {
 		}
 
 		t := s.Function.Type()
+		if t.NumIn() > 0 && t.In(0).Kind() == reflect.Ptr {
+			e := t.In(0).Elem()
+			if e.String() == "testing.T" {
+				numArgs++ // first param is *testing.T
+			}
+		}
 		if numArgs != t.NumIn() { // function has different arity
 			return // TODO raise error
 		}
 
 		values := make([]reflect.Value, numArgs)
-		for i := 0; i < t.NumIn(); i++ {
+		for m, i := 0, 0; i < t.NumIn(); i++ {
 			param := t.In(i)
 
 			var v interface{}
 			switch param.Kind() {
 			case reflect.Slice:
 				param = param.Elem()
-				if param.PkgPath()+"."+param.Name() == "gherkin.TabularData" {
+				if param.String() == "gherkin.TabularData" {
 					v = arg
 				} else if param.Kind() == reflect.Slice && param.Elem().Kind() == reflect.String {
 					// just a raw [][]string slice
 					v = arg
 				}
 			case reflect.Ptr:
-				param = param.Elem()
-				if param.PkgPath()+"."+param.Name() == "testing.T" {
-
+				if param.Elem().String() == "testing.T" {
+					v = c.T
 				}
 			case reflect.Int:
-				i, _ := strconv.ParseInt(match[i], 10, 32)
+				i, _ := strconv.ParseInt(match[m], 10, 32)
 				v = int(i)
+				m++
 			case reflect.Int64:
-				v, _ = strconv.ParseInt(match[i], 10, 64)
+				v, _ = strconv.ParseInt(match[m], 10, 64)
+				m++
 			case reflect.String:
 				// this could be from `arg`, check match index
-				if i >= len(match) {
+				if m >= len(match) {
 					v = arg
 				} else {
-					v = match[i]
+					v = match[m]
+					m++
 				}
 			case reflect.Float64:
-				v, _ = strconv.ParseFloat(match[i], 64)
-			default:
+				v, _ = strconv.ParseFloat(match[m], 64)
+				m++
 			}
 
 			if v == nil {
