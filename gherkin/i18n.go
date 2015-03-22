@@ -1,4 +1,4 @@
-package parser
+package gherkin
 
 type Language string
 
