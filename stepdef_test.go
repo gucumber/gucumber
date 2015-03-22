@@ -17,10 +17,10 @@ func TestRegisterSteps(t *testing.T) {
 	And(`^I have another condition with "(.+?)"$`, func(s string) { str = s })
 	Then(`^something will happen with text$`, func(data string) { str += data })
 
-	RegisteredSteps.Execute("I have a test with 3", "")
-	RegisteredSteps.Execute("I have a condition of 5 with decimal -3.14159", "")
-	RegisteredSteps.Execute("I have another condition with \"arbitrary text\"", "")
-	RegisteredSteps.Execute("something will happen with text", " and hello world")
+	GlobalContext.Execute("I have a test with 3", "")
+	GlobalContext.Execute("I have a condition of 5 with decimal -3.14159", "")
+	GlobalContext.Execute("I have another condition with \"arbitrary text\"", "")
+	GlobalContext.Execute("something will happen with text", " and hello world")
 
 	assert.Equal(t, 8, count)
 	assert.Equal(t, "arbitrary text and hello world", str)

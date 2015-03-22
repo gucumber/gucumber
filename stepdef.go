@@ -4,12 +4,69 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"testing"
 )
+
+var (
+	GlobalContext = Context{Steps: stepDefinitionList{}}
+	T             *testing.T
+)
+
+func Given(match string, fn interface{}) {
+	GlobalContext.Given(match, fn)
+}
+
+func Then(match string, fn interface{}) {
+	GlobalContext.Then(match, fn)
+}
+
+func When(match string, fn interface{}) {
+	GlobalContext.When(match, fn)
+}
+
+func And(match string, fn interface{}) {
+	GlobalContext.And(match, fn)
+}
+
+type Context struct {
+	Steps stepDefinitionList
+	T     *testing.T
+}
+
+func (c *Context) Given(match string, fn interface{}) {
+	c.Steps.add(match, fn)
+}
+
+func (c *Context) Then(match string, fn interface{}) {
+	c.Steps.add(match, fn)
+}
+
+func (c *Context) When(match string, fn interface{}) {
+	c.Steps.add(match, fn)
+}
+
+func (c *Context) And(match string, fn interface{}) {
+	c.Steps.add(match, fn)
+}
+
+func (c *Context) Execute(line string, arg interface{}) error {
+	for _, step := range c.Steps {
+		step.CallIfMatch(line, arg)
+	}
+	return nil
+}
+
+func (c *Context) ExecuteTest(t *testing.T, line string, arg interface{}) {
+	T = t
+	c.Execute(line, arg)
+}
 
 type StepDefinition struct {
 	Matcher  *regexp.Regexp
 	Function reflect.Value
 }
+
+type stepDefinitionList []StepDefinition
 
 func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
@@ -55,38 +112,9 @@ func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 	}
 }
 
-type stepDefinitionList []StepDefinition
-
 func (s *stepDefinitionList) add(match string, fn interface{}) {
 	*s = append(*s, StepDefinition{
 		Matcher:  regexp.MustCompile(match),
 		Function: reflect.ValueOf(fn),
 	})
-}
-
-func (s *stepDefinitionList) Execute(line string, arg interface{}) error {
-	for _, step := range *s {
-		step.CallIfMatch(line, arg)
-	}
-	return nil
-}
-
-var (
-	RegisteredSteps = stepDefinitionList{}
-)
-
-func Given(match string, fn interface{}) {
-	RegisteredSteps.add(match, fn)
-}
-
-func Then(match string, fn interface{}) {
-	RegisteredSteps.add(match, fn)
-}
-
-func When(match string, fn interface{}) {
-	RegisteredSteps.add(match, fn)
-}
-
-func And(match string, fn interface{}) {
-	RegisteredSteps.add(match, fn)
 }
