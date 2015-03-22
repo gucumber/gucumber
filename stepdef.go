@@ -56,17 +56,13 @@ func (c *Context) And(match string, fn interface{}) {
 	c.addStep(match, fn)
 }
 
-func (c *Context) Execute(line string, arg interface{}) error {
-	for _, step := range c.Steps {
-		step.CallIfMatch(c, line, arg)
-	}
-	return nil
-}
-
-func (c *Context) ExecuteTest(t *testing.T, line string, arg interface{}) {
+func (c *Context) Execute(t *testing.T, line string, arg interface{}) error {
 	T = t
 	c.T = t
-	c.Execute(line, arg)
+	for _, step := range c.Steps {
+		step.CallIfMatch(c, t, line, arg)
+	}
+	return nil
 }
 
 type StepDefinition struct {
@@ -74,7 +70,7 @@ type StepDefinition struct {
 	Function reflect.Value
 }
 
-func (s *StepDefinition) CallIfMatch(c *Context, line string, arg interface{}) {
+func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, arg interface{}) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
 		match = match[1:] // discard full line match
 
@@ -111,7 +107,7 @@ func (s *StepDefinition) CallIfMatch(c *Context, line string, arg interface{}) {
 				}
 			case reflect.Ptr:
 				if param.Elem().String() == "testing.T" {
-					v = c.T
+					v = test
 				}
 			case reflect.Int:
 				i, _ := strconv.ParseInt(match[m], 10, 32)

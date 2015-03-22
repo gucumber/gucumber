@@ -28,13 +28,13 @@ func TestRegisterSteps(t *testing.T) {
 		str += " " + data
 	})
 
-	GlobalContext.Execute("I have a test with 3", "")
-	GlobalContext.Execute("I have a condition of 5 with decimal -3.14159", "")
-	GlobalContext.Execute("I have another condition with \"arbitrary text\"", "")
-	GlobalContext.Execute("something will happen with text", "and hello world")
-	GlobalContext.Execute("something will happen with a table:",
+	GlobalContext.Execute(t, "I have a test with 3", "")
+	GlobalContext.Execute(t, "I have a condition of 5 with decimal -3.14159", "")
+	GlobalContext.Execute(t, "I have another condition with \"arbitrary text\"", "")
+	GlobalContext.Execute(t, "something will happen with text", "and hello world")
+	GlobalContext.Execute(t, "something will happen with a table:",
 		gherkin.TabularData{[]string{"a", "b"}, []string{"c", "d"}})
-	GlobalContext.ExecuteTest(t, "I can pass in test context", "")
+	GlobalContext.Execute(t, "I can pass in test context", "")
 
 	assert.Equal(t, 8, count)
 	assert.Equal(t, "arbitrary text and hello world abcd abcd context", str)
