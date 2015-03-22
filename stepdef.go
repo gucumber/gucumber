@@ -58,7 +58,7 @@ func (c *Context) And(match string, fn interface{}) {
 
 func (c *Context) Execute(line string, arg interface{}) error {
 	for _, step := range c.Steps {
-		step.CallIfMatch(line, arg)
+		step.CallIfMatch(c, line, arg)
 	}
 	return nil
 }
@@ -73,7 +73,7 @@ type StepDefinition struct {
 	Function reflect.Value
 }
 
-func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
+func (s *StepDefinition) CallIfMatch(c *Context, line string, arg interface{}) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
 		match = match[1:] // discard full line match
 
@@ -90,8 +90,23 @@ func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 
 		values := make([]reflect.Value, numArgs)
 		for i := 0; i < t.NumIn(); i++ {
+			param := t.In(i)
+
 			var v interface{}
-			switch t.In(i).Kind() {
+			switch param.Kind() {
+			case reflect.Slice:
+				param = param.Elem()
+				if param.PkgPath()+"."+param.Name() == "gherkin.TabularData" {
+					v = arg
+				} else if param.Kind() == reflect.Slice && param.Elem().Kind() == reflect.String {
+					// just a raw [][]string slice
+					v = arg
+				}
+			case reflect.Ptr:
+				param = param.Elem()
+				if param.PkgPath()+"."+param.Name() == "testing.T" {
+
+				}
 			case reflect.Int:
 				i, _ := strconv.ParseInt(match[i], 10, 32)
 				v = int(i)
@@ -107,9 +122,11 @@ func (s *StepDefinition) CallIfMatch(line string, arg interface{}) {
 			case reflect.Float64:
 				v, _ = strconv.ParseFloat(match[i], 64)
 			default:
-				panic("type " + t.String() + "is not supported.")
 			}
 
+			if v == nil {
+				panic("type " + t.String() + "is not supported.")
+			}
 			values[i] = reflect.ValueOf(v)
 		}
 
