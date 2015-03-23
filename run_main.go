@@ -1,12 +1,13 @@
-package cucumber
+package gucumber
 
-import (
-	"fmt"
-	"os"
-)
+import "fmt"
 
-func RunMain() {
-	runner, err := GlobalContext.RunDir(os.Args[1])
+func RunMain(args ...string) {
+	if len(args) == 0 {
+		args = []string{"features"}
+	}
+
+	runner, err := GlobalContext.RunDir(args[0])
 	if err != nil {
 		panic(err)
 	}

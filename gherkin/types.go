@@ -34,7 +34,7 @@ type Scenario struct {
 	Examples TabularData
 }
 
-// Step represents an individual step making up a Cucumber scenario.
+// Step represents an individual step making up a gucumber scenario.
 type Step struct {
 	// The step's "type" (Given, When, Then, And, ...)
 	//

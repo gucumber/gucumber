@@ -1,4 +1,4 @@
-package cucumber
+package gucumber
 
 import (
 	"fmt"

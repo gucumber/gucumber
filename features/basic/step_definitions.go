@@ -1,11 +1,11 @@
-package main
+package basic
 
 import (
-	. "github.com/lsegal/go-cucumber"
+	. "github.com/lsegal/gucumber"
 	"github.com/stretchr/testify/assert"
 )
 
-func main() {
+func init() {
 	executions := 0
 
 	Given(`^I have an initial step$`, func() {
@@ -17,13 +17,11 @@ func main() {
 	})
 
 	When(`^I run the "(.+?)" command$`, func(s1 string) {
-		assert.Equal(T, "cucumber.go", s1)
+		assert.Equal(T, "gucumber.go", s1)
 	})
 
 	Then(`^this scenario should execute (\d+) time and pass$`, func(i1 int) {
 		executions++
 		assert.Equal(T, executions, i1)
 	})
-
-	RunMain()
 }

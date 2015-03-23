@@ -1,4 +1,4 @@
-package cucumber
+package gucumber
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lsegal/go-cucumber/gherkin"
+	"github.com/lsegal/gucumber/gherkin"
 	"github.com/shiena/ansicolor"
 )
 
@@ -97,7 +97,7 @@ func (c *Context) RunFiles(files []string) (*Runner, error) {
 func (c *Runner) MissingMatcherStubs() string {
 	var buf bytes.Buffer
 
-	buf.WriteString(`import . "github.com/lsegal/go-cucumber"` + "\n\n")
+	buf.WriteString(`import . "github.com/lsegal/gucumber"` + "\n\n")
 	buf.WriteString("func init() {\n")
 
 	for _, m := range c.Unmatched {

@@ -1,10 +1,10 @@
-package cucumber_test
+package gucumber_test
 
 import (
 	"testing"
 
-	. "github.com/lsegal/go-cucumber"
-	"github.com/lsegal/go-cucumber/gherkin"
+	. "github.com/lsegal/gucumber"
+	"github.com/lsegal/gucumber/gherkin"
 	"github.com/stretchr/testify/assert"
 )
 
