@@ -76,7 +76,6 @@ $ gucumber path/to/features
 
 * [ ] Add test output for failing steps.
 * [ ] Support hooks and filters.
-* [ ] Run scenario outlines.
 
 # Copyright
 

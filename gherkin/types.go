@@ -1,5 +1,7 @@
 package gherkin
 
+import "reflect"
+
 // Feature represents the top-most construct in a Gherkin document. A feature
 // contains one or more scenarios, which in turn contains multiple steps.
 type Feature struct {
@@ -89,4 +91,12 @@ func (t TabularData) ToMap() TabularDataMap {
 		}
 	}
 	return m
+}
+
+// NumRows returns the number of rows in a table map
+func (t TabularDataMap) NumRows() int {
+	if len(t) == 0 {
+		return 0
+	}
+	return len(t[reflect.ValueOf(t).MapKeys()[0].String()])
 }

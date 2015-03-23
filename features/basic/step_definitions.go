@@ -7,6 +7,7 @@ import (
 
 func init() {
 	executions := 0
+	result := 0
 
 	Given(`^I have an initial step$`, func() {
 		assert.Equal(T, 1, 1)
@@ -23,5 +24,13 @@ func init() {
 	Then(`^this scenario should execute (\d+) time and pass$`, func(i1 int) {
 		executions++
 		assert.Equal(T, executions, i1)
+	})
+
+	Given(`^I perform (\d+) \+ (\d+)$`, func(i1 int, i2 int) {
+		result = i1 + i2
+	})
+
+	Then(`^I should get (\d+)$`, func(i1 int) {
+		assert.Equal(T, result, i1)
 	})
 }

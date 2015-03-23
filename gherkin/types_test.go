@@ -22,6 +22,7 @@ func TestTabularDataToMap(t *testing.T) {
 	}
 
 	assert.Equal(t, m, tab.ToMap())
+	assert.Equal(t, 3, m.NumRows())
 }
 
 func TestTabularDataMapEmpty(t *testing.T) {
@@ -32,9 +33,11 @@ func TestTabularDataMapEmpty(t *testing.T) {
 	tab = TabularData{[]string{"a", "b", "c", "d"}}
 	m = TabularDataMap{}
 	assert.Equal(t, m, tab.ToMap())
+	assert.Equal(t, 0, m.NumRows())
 
 	// completely empty
 	tab = TabularData{}
 	m = TabularDataMap{}
 	assert.Equal(t, m, tab.ToMap())
+	assert.Equal(t, 0, m.NumRows())
 }

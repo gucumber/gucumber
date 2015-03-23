@@ -27,7 +27,8 @@ const (
 var (
 	reUnmatchInt   = regexp.MustCompile(txtUnmatchInt)
 	reUnmatchFloat = regexp.MustCompile(txtUnmatchFloat)
-	reUnmatchStr   = regexp.MustCompile(txtUnmatchStr)
+	reUnmatchStr   = regexp.MustCompile(`(<|").+?("|>)`)
+	reOutlineVal   = regexp.MustCompile(`<(.+?)>`)
 )
 
 type Runner struct {
@@ -100,6 +101,7 @@ func (c *Context) RunFiles(featureFiles []string) (*Runner, error) {
 
 func (c *Runner) MissingMatcherStubs() string {
 	var buf bytes.Buffer
+	matches := map[string]bool{}
 
 	buf.WriteString(`import . "github.com/lsegal/gucumber"` + "\n\n")
 	buf.WriteString("func init() {\n")
@@ -130,6 +132,12 @@ func (c *Runner) MissingMatcherStubs() string {
 			args = append(args, "data string")
 		}
 
+		// Don't duplicate matchers. This is mostly for scenario outlines.
+		if matches[str] {
+			continue
+		}
+		matches[str] = true
+
 		fmt.Fprintf(&buf, "\t%s(`^%s$`, func(%s) {\n\t\tT.Skip() // pending\n\t})\n\n",
 			m.Type, str, strings.Join(args, ", "))
 	}
@@ -151,23 +159,39 @@ func (c *Runner) runFeature(f *gherkin.Feature) {
 	c.line("0;1", "Feature: %s", f.Title)
 
 	if f.Background.Steps != nil {
-		c.line("0;1", "  Background:")
-		c.runScenario(f, &f.Background)
-		c.line("0", "")
+		c.runScenario("Background", f, &f.Background)
 	}
 
 	for _, s := range f.Scenarios {
-		c.line("0;1", "  Scenario: %s", s.Title)
-		c.runScenario(f, &s)
-		c.line("0", "")
+		c.runScenario("Scenario", f, &s)
 	}
 }
 
-func (c *Runner) runScenario(f *gherkin.Feature, s *gherkin.Scenario) {
+func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenario) {
+	if len(s.Examples) > 1 { // run scenario outline data
+		for i, rows := 0, s.Examples.NumRows(); i < rows; i++ {
+			other := gherkin.Scenario{
+				Title:    s.Title,
+				Examples: gherkin.TabularDataMap{},
+				Steps:    []gherkin.Step{},
+			}
+
+			for _, step := range s.Steps {
+				step.Text = reOutlineVal.ReplaceAllStringFunc(step.Text, func(t string) string {
+					return s.Examples[t[1:len(t)-1]][i]
+				})
+				other.Steps = append(other.Steps, step)
+			}
+			c.runScenario(title, f, &other)
+		}
+		return
+	}
+
 	t := &testing.T{}
 	skipping := false
 	clr := clrGreen
 
+	c.line("0;1", "  %s: %s", title, s.Title)
 	for _, step := range s.Steps {
 		found := false
 		if !skipping {
@@ -207,6 +231,7 @@ func (c *Runner) runScenario(f *gherkin.Feature, s *gherkin.Scenario) {
 
 		c.line(clr, "    %s %s", step.Type, step.Text)
 	}
+	c.line("0", "")
 }
 
 func (c *Runner) line(clr, text string, args ...interface{}) {
