@@ -31,7 +31,7 @@ type Scenario struct {
 	Steps []Step
 
 	// Contains all scenario outline example data, if provided.
-	Examples TabularData
+	Examples TabularDataMap
 }
 
 // Step represents an individual step making up a gucumber scenario.
@@ -56,8 +56,37 @@ type StringData string
 // TabularData is tabular text data attached to a step.
 type TabularData [][]string
 
+// TabularDataMap is tabular text data attached to a step organized in map
+// form of the header name and its associated row data.
+type TabularDataMap map[string][]string
+
 // StepType represents a given step type.
 type StepType string
 
 // Tag is a string representation of a tag used in Gherkin syntax.
 type Tag string
+
+// ToMap converts a regular table to a map of header names to their row data.
+// For example:
+//
+//     t := TabularData{[]string{"header1", "header2"}, []string{"col1", "col2"}}
+//     t.ToMap()
+//     // Output:
+//     //   map[string][]string{
+//     //     "header1": []string{"col1"},
+//     //     "header2": []string{"col2"},
+//     //   }
+func (t TabularData) ToMap() TabularDataMap {
+	m := TabularDataMap{}
+	if len(t) > 1 {
+		for _, th := range t[0] {
+			m[th] = []string{}
+		}
+		for _, tr := range t[1:] {
+			for c, td := range tr {
+				m[t[0][c]] = append(m[t[0][c]], td)
+			}
+		}
+	}
+	return m
+}

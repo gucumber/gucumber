@@ -182,7 +182,7 @@ Feature: Scenario outlines
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, TabularData{[]string{"foo", "bar"}, []string{"1", "2"}, []string{"3", "4"}}, f[0].Scenarios[0].Examples)
+	assert.Equal(t, TabularDataMap{"foo": []string{"1", "3"}, "bar": []string{"2", "4"}}, f[0].Scenarios[0].Examples)
 }
 
 func TestStepArguments(t *testing.T) {

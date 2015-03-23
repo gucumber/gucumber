@@ -266,7 +266,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 		scenario.Steps = append(scenario.Steps, s)
 	case p.translations.Examples + ":":
 		ex := p.consumeIndentedData(indent).(TabularData)
-		scenario.Examples = ex
+		scenario.Examples = ex.ToMap()
 	default:
 		return p.err("illegal step prefix %q", parts[0])
 	}
