@@ -194,6 +194,9 @@ func (p *parser) consumeFeature() error {
 			} else {
 				s.Tags = []Tag{}
 			}
+			if len(parts) > 1 {
+				s.Title = parts[1]
+			}
 			f.Scenarios = append(f.Scenarios, s)
 			stags = nil
 		default: // then this must be a description

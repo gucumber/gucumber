@@ -52,6 +52,7 @@ Feature: Refund item
 	assert.Equal(t, "@tag1", features[0].Tags[0])
 	assert.Equal(t, "@tag2", features[0].Tags[1])
 	assert.Equal(t, 1, len(features[0].Scenarios))
+	assert.Equal(t, "Jeff returns a faulty microwave", features[0].Scenarios[0].Title)
 	assert.Equal(t, "A multiline description of the Feature\nthat can contain any text like\nRules:\n- a\n- b", features[0].Description)
 	assert.Equal(t, 4, len(features[0].Scenarios[0].Steps))
 	assert.Equal(t, "@tag1", features[0].Scenarios[0].Tags[0])
