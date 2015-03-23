@@ -46,21 +46,25 @@ type RunnerResult struct {
 }
 
 func (c *Context) RunDir(dir string) (*Runner, error) {
-	g, err := filepath.Glob(filepath.Join(dir, "*.feature"))
-	if err != nil {
-		return nil, err
-	}
-
-	g2, err := filepath.Glob(filepath.Join(dir, "**", "*.feature"))
-	if err != nil {
-		return nil, err
-	}
-
+	g, _ := filepath.Glob(filepath.Join(dir, "*.feature"))
+	g2, _ := filepath.Glob(filepath.Join(dir, "**", "*.feature"))
 	g = append(g, g2...)
-	return c.RunFiles(g)
+
+	runner, err := c.RunFiles(g)
+	if err != nil {
+		panic(err)
+	}
+
+	if len(runner.Unmatched) > 0 {
+		fmt.Println("Some steps were missing, you can add them by using the following step definition stubs: ")
+		fmt.Println("")
+		fmt.Print(runner.MissingMatcherStubs())
+	}
+
+	return runner, err
 }
 
-func (c *Context) RunFiles(files []string) (*Runner, error) {
+func (c *Context) RunFiles(featureFiles []string) (*Runner, error) {
 	r := Runner{
 		Context:   c,
 		Features:  []*gherkin.Feature{},
@@ -68,7 +72,7 @@ func (c *Context) RunFiles(files []string) (*Runner, error) {
 		Unmatched: []*gherkin.Step{},
 	}
 
-	for _, file := range files {
+	for _, file := range featureFiles {
 		fd, err := os.Open(file)
 		if err != nil {
 			return nil, err

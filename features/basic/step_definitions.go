@@ -17,7 +17,7 @@ func init() {
 	})
 
 	When(`^I run the "(.+?)" command$`, func(s1 string) {
-		assert.Equal(T, "gucumber.go", s1)
+		assert.Equal(T, "gucumber", s1)
 	})
 
 	Then(`^this scenario should execute (\d+) time and pass$`, func(i1 int) {
