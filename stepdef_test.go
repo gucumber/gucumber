@@ -28,13 +28,13 @@ func TestRegisterSteps(t *testing.T) {
 		str += " " + data
 	})
 
-	found, err := GlobalContext.Execute(t, "I have a test with 3", "")
-	GlobalContext.Execute(t, "I have a condition of 5 with decimal -3.14159", "")
-	GlobalContext.Execute(t, "I have another condition with \"arbitrary text\"", "")
+	found, err := GlobalContext.Execute(t, "I have a test with 3", nil)
+	GlobalContext.Execute(t, "I have a condition of 5 with decimal -3.14159", nil)
+	GlobalContext.Execute(t, "I have another condition with \"arbitrary text\"", nil)
 	GlobalContext.Execute(t, "something will happen with text", "and hello world")
 	GlobalContext.Execute(t, "something will happen with a table:",
 		gherkin.TabularData{[]string{"a", "b"}, []string{"c", "d"}})
-	GlobalContext.Execute(t, "I can pass in test context", "")
+	GlobalContext.Execute(t, "I can pass in test context", nil)
 
 	assert.NoError(t, err)
 	assert.Equal(t, true, found)
@@ -46,7 +46,7 @@ func TestRegisterSteps(t *testing.T) {
 
 func TestDifferentArgCount(t *testing.T) {
 	Given(`^an arg mismatch$`, func(i int) {})
-	f, err := GlobalContext.Execute(t, "an arg mismatch", "")
+	f, err := GlobalContext.Execute(t, "an arg mismatch", nil)
 
 	assert.EqualError(t, err, "matcher function has different arity 0 != 1")
 	assert.Equal(t, true, f)
