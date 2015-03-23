@@ -1,28 +1,10 @@
 package gherkin
 
 import (
-	"io/ioutil"
-	"os"
-	"path/filepath"
-	"runtime"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
-
-var (
-	fixturesPath = func() string {
-		_, filename, _, _ := runtime.Caller(1)
-		return filepath.Join(filepath.Dir(filename), "..", "fixtures")
-	}()
-)
-
-func fixture(file string) string {
-	f, _ := os.Open(filepath.Join(fixturesPath, file))
-	defer f.Close()
-	b, _ := ioutil.ReadAll(f)
-	return string(b)
-}
 
 func TestParseSingleScenario(t *testing.T) {
 	s := `
