@@ -38,10 +38,7 @@ type Scenario struct {
 type Step struct {
 	// The step's "type" (Given, When, Then, And, ...)
 	//
-	// Note that this field is not normalized across languages and represents
-	// the type as it appeared in the original source text. If you want to
-	// check against a set of known types ("Given" specifically, for example),
-	// you should compare against names found in Translations["LANG"] instead.
+	// Note that this field is normalized to the English form (e.g., "Given").
 	Type StepType
 
 	// The text contained in the step (minus the "Type" prefix).

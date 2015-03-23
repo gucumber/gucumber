@@ -251,7 +251,18 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 			}
 		}
 
-		s := Step{Type: StepType(parts[0]), Text: parts[1], Argument: arg}
+		var stype StepType
+		switch parts[0] {
+		case p.translations.Given:
+			stype = StepType("Given")
+		case p.translations.When:
+			stype = StepType("When")
+		case p.translations.Then:
+			stype = StepType("Then")
+		case p.translations.And:
+			stype = StepType("And")
+		}
+		s := Step{Type: stype, Text: parts[1], Argument: arg}
 		scenario.Steps = append(scenario.Steps, s)
 	case p.translations.Examples + ":":
 		ex := p.consumeIndentedData(indent).(TabularData)

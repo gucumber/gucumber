@@ -1,10 +1,13 @@
 package cucumber
 
 import (
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/lsegal/go-cucumber/gherkin"
@@ -15,6 +18,16 @@ const (
 	clrRed    = "31"
 	clrGreen  = "32"
 	clrYellow = "33"
+
+	txtUnmatchInt   = `(\d+)`
+	txtUnmatchFloat = `(-?\d+(?:\.\d+)?)`
+	txtUnmatchStr   = `"(.+?)"`
+)
+
+var (
+	reUnmatchInt   = regexp.MustCompile(txtUnmatchInt)
+	reUnmatchFloat = regexp.MustCompile(txtUnmatchFloat)
+	reUnmatchStr   = regexp.MustCompile(txtUnmatchStr)
 )
 
 type Runner struct {
@@ -32,22 +45,22 @@ type RunnerResult struct {
 	*gherkin.Scenario
 }
 
-func (c *Context) RunDir(dir string) error {
+func (c *Context) RunDir(dir string) (*Runner, error) {
 	g, err := filepath.Glob(filepath.Join(dir, "*.feature"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	g2, err := filepath.Glob(filepath.Join(dir, "**", "*.feature"))
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	g = append(g, g2...)
 	return c.RunFiles(g)
 }
 
-func (c *Context) RunFiles(files []string) error {
+func (c *Context) RunFiles(files []string) (*Runner, error) {
 	r := Runner{
 		Context:   c,
 		Features:  []*gherkin.Feature{},
@@ -58,18 +71,18 @@ func (c *Context) RunFiles(files []string) error {
 	for _, file := range files {
 		fd, err := os.Open(file)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		defer fd.Close()
 
 		b, err := ioutil.ReadAll(fd)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		fs, err := gherkin.ParseFilename(string(b), file)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		for _, f := range fs {
@@ -78,7 +91,47 @@ func (c *Context) RunFiles(files []string) error {
 	}
 
 	r.run()
-	return nil
+	return &r, nil
+}
+
+func (c *Runner) MissingMatcherStubs() string {
+	var buf bytes.Buffer
+
+	buf.WriteString(`import . "github.com/lsegal/go-cucumber"` + "\n\n")
+	buf.WriteString("func init() {\n")
+
+	for _, m := range c.Unmatched {
+		numInts, numFloats, numStrs := 1, 1, 1
+		str, args := m.Text, []string{}
+		str = reUnmatchInt.ReplaceAllStringFunc(str, func(s string) string {
+			args = append(args, fmt.Sprintf("i%d int", numInts))
+			numInts++
+			return txtUnmatchInt
+		})
+		str = reUnmatchFloat.ReplaceAllStringFunc(str, func(s string) string {
+			args = append(args, fmt.Sprintf("s%d float64", numFloats))
+			numFloats++
+			return txtUnmatchFloat
+		})
+		str = reUnmatchStr.ReplaceAllStringFunc(str, func(s string) string {
+			args = append(args, fmt.Sprintf("s%d string", numStrs))
+			numStrs++
+			return txtUnmatchStr
+		})
+
+		switch m.Argument.(type) {
+		case gherkin.TabularData:
+			args = append(args, "table [][]string")
+		case gherkin.StringData:
+			args = append(args, "data string")
+		}
+
+		fmt.Fprintf(&buf, "\t%s(`^%s$`, func(%s) {\n\t\tT.Skip() // pending\n\t})\n\n",
+			m.Type, str, strings.Join(args, ", "))
+	}
+
+	buf.WriteString("}\n")
+	return buf.String()
 }
 
 func (c *Runner) run() {
@@ -112,6 +165,7 @@ func (c *Runner) runScenario(f *gherkin.Feature, s *gherkin.Scenario) {
 	clr := clrGreen
 
 	for _, step := range s.Steps {
+		found := false
 		if !skipping {
 			done := make(chan bool)
 			go func() {
@@ -124,22 +178,27 @@ func (c *Runner) runScenario(f *gherkin.Feature, s *gherkin.Scenario) {
 						clr = clrYellow
 					} else if t.Failed() {
 						c.FailCount++
-						skipping = true
 						clr = clrRed
 					}
 					done <- true
 				}()
 
-				b, err := c.Execute(t, step.Text, step.Argument)
+				f, err := c.Execute(t, step.Text, step.Argument)
 				if err != nil {
 					t.Error(err)
 				}
-				if !b {
-					c.Unmatched = append(c.Unmatched, &step)
+				found = f
+
+				if !f {
 					t.Skip("no match function for step")
 				}
 			}()
 			<-done
+		}
+
+		if skipping && !found {
+			cstep := step
+			c.Unmatched = append(c.Unmatched, &cstep)
 		}
 
 		c.line(clr, "    %s %s", step.Type, step.Text)

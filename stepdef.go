@@ -88,7 +88,7 @@ func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, a
 
 		// adjust arity if there is step arg data
 		numArgs := len(match)
-		if arg != "" {
+		if arg != nil {
 			numArgs++
 		}
 
