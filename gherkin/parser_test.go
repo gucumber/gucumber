@@ -149,7 +149,7 @@ Feature: Comments at end
 func TestScenarioOutlines(t *testing.T) {
 	s := `
 Feature: Scenario outlines
-  Scenario: Scenario 1
+  Scenario Outline: Scenario 1
     Given some value <foo>
     Then some result <bar>
 

@@ -161,10 +161,10 @@ func (p *parser) consumeFeature() error {
 		}
 
 		line, _ := p.lineStripped()
-		parts := strings.SplitN(line, " ", 2)
+		parts := strings.SplitN(line, ":", 2)
 
 		switch parts[0] {
-		case p.translations.Background + ":":
+		case p.translations.Background:
 			if seenScenario {
 				return p.err("illegal background after scenario")
 			} else if seenBackground {
@@ -184,7 +184,7 @@ func (p *parser) consumeFeature() error {
 			}
 			f.Background = b
 			stags = nil
-		case p.translations.Scenario + ":":
+		case p.translations.Scenario, p.translations.Outline:
 			seenScenario = true
 
 			s := Scenario{Filename: p.filename, Line: p.lineNo}
@@ -198,7 +198,7 @@ func (p *parser) consumeFeature() error {
 				s.Tags = []Tag{}
 			}
 			if len(parts) > 1 {
-				s.Title = parts[1]
+				s.Title = strings.TrimSpace(parts[1])
 			}
 			f.Scenarios = append(f.Scenarios, s)
 			stags = nil

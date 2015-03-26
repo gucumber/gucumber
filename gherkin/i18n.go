@@ -13,6 +13,9 @@ type Translation struct {
 	// Language specific term representing a scenario.
 	Scenario string
 
+	// Language specific term representing a scenario outline.
+	Outline string
+
 	// Language specific term representing the "And" step.
 	And string
 
@@ -42,6 +45,7 @@ var (
 			Feature:    "Feature",
 			Background: "Background",
 			Scenario:   "Scenario",
+			Outline:    "Scenario Outline",
 			And:        "And",
 			Given:      "Given",
 			When:       "When",
