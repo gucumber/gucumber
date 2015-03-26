@@ -171,6 +171,8 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	if len(s.Examples) > 1 { // run scenario outline data
 		for i, rows := 0, s.Examples.NumRows(); i < rows; i++ {
 			other := gherkin.Scenario{
+				Filename: s.Filename,
+				Line:     s.Line,
 				Title:    s.Title,
 				Examples: gherkin.TabularDataMap{},
 				Steps:    []gherkin.Step{},

@@ -5,6 +5,12 @@ import "reflect"
 // Feature represents the top-most construct in a Gherkin document. A feature
 // contains one or more scenarios, which in turn contains multiple steps.
 type Feature struct {
+	// The filename where the feature was defined
+	Filename string
+
+	// The line number where the feature was defined
+	Line int
+
 	// The feature's title.
 	Title string
 
@@ -19,10 +25,19 @@ type Feature struct {
 
 	// The scenarios associated with this feature.
 	Scenarios []Scenario
+
+	// The longest line length in the feature (including title)
+	longestLine int
 }
 
 // Scenario represents a scenario (or background) of a given feature.
 type Scenario struct {
+	// The filename where the scenario was defined
+	Filename string
+
+	// The line number where the scenario was defined
+	Line int
+
 	// The scenario's title. For backgrounds, this is the empty string.
 	Title string
 
@@ -34,10 +49,19 @@ type Scenario struct {
 
 	// Contains all scenario outline example data, if provided.
 	Examples TabularDataMap
+
+	// The longest line length in the scenario (including title)
+	longestLine int
 }
 
 // Step represents an individual step making up a gucumber scenario.
 type Step struct {
+	// The filename where the step was defined
+	Filename string
+
+	// The line number where the step was defined
+	Line int
+
 	// The step's "type" (Given, When, Then, And, ...)
 	//
 	// Note that this field is normalized to the English form (e.g., "Given").
@@ -99,4 +123,28 @@ func (t TabularDataMap) NumRows() int {
 		return 0
 	}
 	return len(t[reflect.ValueOf(t).MapKeys()[0].String()])
+}
+
+func (s *Scenario) LongestLine() int {
+	if s.longestLine == 0 {
+		s.longestLine = len("Scenario: " + s.Title)
+		for _, step := range s.Steps {
+			if l := len(string(step.Type) + " " + step.Text); l > s.longestLine {
+				s.longestLine = l
+			}
+		}
+	}
+	return s.longestLine
+}
+
+func (f *Feature) LongestLine() int {
+	if f.longestLine == 0 {
+		f.longestLine = len("Feature: " + f.Title)
+		for _, s := range f.Scenarios {
+			if l := s.LongestLine(); l > f.longestLine {
+				f.longestLine = l
+			}
+		}
+	}
+	return f.longestLine
 }
