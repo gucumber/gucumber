@@ -131,7 +131,10 @@ func (p *parser) consumeFeature() error {
 	if len(parts) > 1 {
 		title = parts[1]
 	}
-	f := Feature{Title: title, Tags: tags, Scenarios: []Scenario{}}
+	f := Feature{
+		Title: title, Tags: tags, Scenarios: []Scenario{},
+		Filename: p.filename, Line: p.lineNo,
+	}
 	var stags *[]Tag
 	seenScenario, seenBackground := false, false
 	for p.stillReading() { // consume until we get to Background or Scenario
@@ -169,7 +172,7 @@ func (p *parser) consumeFeature() error {
 			}
 			seenBackground = true
 
-			var b Scenario
+			b := Scenario{Filename: p.filename, Line: p.lineNo}
 			err = p.consumeScenario(&b)
 			if err != nil {
 				return err
@@ -184,7 +187,7 @@ func (p *parser) consumeFeature() error {
 		case p.translations.Scenario + ":":
 			seenScenario = true
 
-			var s Scenario
+			s := Scenario{Filename: p.filename, Line: p.lineNo}
 			err = p.consumeScenario(&s)
 			if err != nil {
 				return err
@@ -240,6 +243,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 	case p.translations.Given, p.translations.Then,
 		p.translations.When, p.translations.And:
 		var arg interface{}
+		var rawArg string
 		if len(parts) < 2 {
 			return p.err("expected step text after %q", parts[0])
 		}
@@ -247,7 +251,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 			_, i := p.lineStripped()
 			p.unread()
 			if i > indent { // this is step argument data
-				arg = p.consumeIndentedData(indent)
+				arg, rawArg = p.consumeIndentedData(indent)
 			}
 		}
 
@@ -262,10 +266,15 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 		case p.translations.And:
 			stype = StepType("And")
 		}
-		s := Step{Type: stype, Text: parts[1], Argument: arg}
+		s := Step{
+			Filename: p.filename, Line: p.lineNo,
+			Type: stype, Text: parts[1],
+			Argument: arg, RawArgument: rawArg,
+		}
 		scenario.Steps = append(scenario.Steps, s)
 	case p.translations.Examples + ":":
-		ex := p.consumeIndentedData(indent).(TabularData)
+		arg, _ := p.consumeIndentedData(indent)
+		ex := arg.(TabularData)
 		scenario.Examples = ex.ToMap()
 	default:
 		return p.err("illegal step prefix %q", parts[0])
@@ -273,7 +282,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 	return nil
 }
 
-func (p *parser) consumeIndentedData(scenarioIndent int) interface{} {
+func (p *parser) consumeIndentedData(scenarioIndent int) (interface{}, string) {
 	var stringData []string
 	var tabData TabularData
 	startIndent, quoted := -1, false
@@ -324,10 +333,11 @@ func (p *parser) consumeIndentedData(scenarioIndent int) interface{} {
 
 	}
 
+	data := strings.Join(stringData, "\n")
 	if quoted {
-		return strings.Join(stringData, "\n")
+		return data, data
 	}
-	return tabData
+	return tabData, data
 }
 
 func (p *parser) consumeTags() ([]Tag, error) {

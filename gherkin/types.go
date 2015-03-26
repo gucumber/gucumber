@@ -74,6 +74,9 @@ type Step struct {
 	// This value is an interface{} but is only ever set to a StringData
 	// or TabularData type.
 	Argument interface{}
+
+	// The raw argument data, if any.
+	RawArgument string
 }
 
 // StringData is multi-line docstring text attached to a step.

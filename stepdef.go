@@ -5,12 +5,11 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
-	"testing"
 )
 
 var (
 	GlobalContext = Context{Steps: []StepDefinition{}}
-	T             *testing.T
+	T             Tester
 
 	errNoMatchingStepFns = fmt.Errorf("no functions matched step.")
 )
@@ -33,7 +32,7 @@ func And(match string, fn interface{}) {
 
 type Context struct {
 	Steps []StepDefinition
-	T     *testing.T
+	T     Tester
 }
 
 func (c *Context) addStep(match string, fn interface{}) {
@@ -59,7 +58,7 @@ func (c *Context) And(match string, fn interface{}) {
 	c.addStep(match, fn)
 }
 
-func (c *Context) Execute(t *testing.T, line string, arg interface{}) (bool, error) {
+func (c *Context) Execute(t Tester, line string, arg interface{}) (bool, error) {
 	T = t
 	c.T = t
 
@@ -82,7 +81,7 @@ type StepDefinition struct {
 	Function reflect.Value
 }
 
-func (s *StepDefinition) CallIfMatch(c *Context, test *testing.T, line string, arg interface{}) (bool, error) {
+func (s *StepDefinition) CallIfMatch(c *Context, test Tester, line string, arg interface{}) (bool, error) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
 		match = match[1:] // discard full line match
 

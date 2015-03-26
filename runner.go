@@ -7,8 +7,8 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
-	"testing"
 
 	"github.com/lsegal/gucumber/gherkin"
 	"github.com/shiena/ansicolor"
@@ -41,7 +41,7 @@ type Runner struct {
 }
 
 type RunnerResult struct {
-	*testing.T
+	*TestingT
 	*gherkin.Feature
 	*gherkin.Scenario
 }
@@ -189,12 +189,15 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 		return
 	}
 
-	t := &testing.T{}
+	t := &TestingT{}
 	skipping := false
 	clr := clrGreen
 
-	c.line("0;1", "  %s: %s", title, s.Title)
+	c.fileLine("0;1", "  %s: %s", s.Filename, s.Line, s.LongestLine(),
+		title, s.Title)
+
 	for _, step := range s.Steps {
+		errCount := len(t.errors)
 		found := false
 		if !skipping {
 			done := make(chan bool)
@@ -210,6 +213,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 						c.FailCount++
 						clr = clrRed
 					}
+
 					done <- true
 				}()
 
@@ -231,12 +235,73 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 			c.Unmatched = append(c.Unmatched, &cstep)
 		}
 
-		c.line(clr, "    %s %s", step.Type, step.Text)
+		c.fileLine(clr, "    %s %s", step.Filename, step.Line,
+			s.LongestLine(), step.Type, step.Text)
+
+		if len(t.errors) > errCount {
+			c.line(clrRed, "\n"+t.errors[len(t.errors)-1].message)
+		}
 	}
 	c.line("0", "")
 }
 
+var writer = ansicolor.NewAnsiColorWriter(os.Stdout)
+
 func (c *Runner) line(clr, text string, args ...interface{}) {
-	w := ansicolor.NewAnsiColorWriter(os.Stdout)
-	fmt.Fprintf(w, "\033[%sm%s\033[0;0m\n", clr, fmt.Sprintf(text, args...))
+	fmt.Fprintf(writer, "\033[%sm%s\033[0;0m\n", clr, fmt.Sprintf(text, args...))
+}
+
+func (c *Runner) fileLine(clr, text, filename string, line int, max int, args ...interface{}) {
+	space, str := "", fmt.Sprintf(text, args...)
+	if l := max + 5 - len(str); l > 0 {
+		space = strings.Repeat(" ", l)
+	}
+	comment := fmt.Sprintf("%s \033[39;0m# %s:%d", space, filename, line)
+	c.line(clr, "%s%s", str, comment)
+}
+
+type Tester interface {
+	Errorf(format string, args ...interface{})
+}
+
+type TestingT struct {
+	skipped bool
+	errors  []TestError
+}
+
+type TestError struct {
+	message string
+	stack   []byte
+}
+
+func (t *TestingT) Errorf(format string, args ...interface{}) {
+	var buf bytes.Buffer
+
+	str := fmt.Sprintf(format, args...)
+	sbuf := make([]byte, 8192)
+	for {
+		size := runtime.Stack(sbuf, false)
+		if size < len(sbuf) {
+			break
+		}
+		buf.Write(sbuf[0:size])
+	}
+
+	t.errors = append(t.errors, TestError{message: str, stack: buf.Bytes()})
+}
+
+func (t *TestingT) Skip(args ...interface{}) {
+	t.skipped = true
+}
+
+func (t *TestingT) Skipped() bool {
+	return t.skipped
+}
+
+func (t *TestingT) Failed() bool {
+	return len(t.errors) > 0
+}
+
+func (t *TestingT) Error(err error) {
+	t.errors = append(t.errors, TestError{message: err.Error()})
 }
