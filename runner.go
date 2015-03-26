@@ -153,6 +153,8 @@ func (c *Runner) run() {
 
 	c.line("0;1", "finished (%d passed, %d failed, %d skipped).\n",
 		len(c.Results)-c.FailCount-c.SkipCount, c.FailCount, c.SkipCount)
+
+	os.Exit(c.FailCount)
 }
 
 func (c *Runner) runFeature(f *gherkin.Feature) {
