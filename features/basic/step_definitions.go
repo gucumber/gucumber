@@ -23,7 +23,7 @@ func init() {
 
 	Then(`^this scenario should execute (\d+) time and pass$`, func(i1 int) {
 		executions++
-		assert.Equal(T, executions, i1)
+		assert.Equal(T, i1, executions)
 	})
 
 	Given(`^I perform (\d+) \+ (\d+)$`, func(i1 int, i2 int) {
