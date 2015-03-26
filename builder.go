@@ -18,10 +18,9 @@ const (
 func BuildAndRunDir(dir string) error {
 	defer buildCleanup(dir)
 
-	absDir, _ := filepath.Abs(dir)
 	info := buildInfo{
 		Imports:      []string{},
-		FeaturesPath: fmt.Sprintf("%q", absDir),
+		FeaturesPath: fmt.Sprintf("%q", dir),
 	}
 
 	goFiles, _ := filepath.Glob(filepath.Join(dir, "*.go"))
