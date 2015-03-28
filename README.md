@@ -1,5 +1,9 @@
 # Gucumber
 
+[![GoDoc](http://img.shields.io/badge/godoc-reference-blue.svg)](http://godoc.org/github.com/lsegal/gucumber)
+[![Build Status](https://img.shields.io/travis/lsegal/gucumber.svg)](https://travis-ci.org/lsegal/gucumber)
+[![MIT License](http://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/lsegal/gucumber/blob/master/LICENSE.txt)
+
 An implementation of [Cucumber][cuke] BDD-style testing for Go.
 
 # Installing
