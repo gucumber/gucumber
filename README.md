@@ -24,6 +24,7 @@ prefer. For example, you might create `features/accounts/login.feature` with
 the following text:
 
 ```
+@login
 Feature: Login Support
 
   Scenario: User successfully logs in
@@ -47,6 +48,11 @@ import (
 
 func init() {
 	user, pass := "", ""
+
+	Before("@login", func() {
+		// runs before every feature or scenario tagged with @login
+		generatePassword()
+	})
 
 	Given(`^I have user/pass "(.+?)" / "(.+?)"$`, func(u, p string) {
 		user, pass = u, p
@@ -76,10 +82,17 @@ You can also specify the path to features in command line arguments:
 $ gucumber path/to/features
 ```
 
-# TODO
+You can also filter features and scenarios by tags:
 
-* [ ] Add test output for failing steps.
-* [ ] Support hooks and filters.
+```sh
+$ gucumber -tags=@login # only run login feature(s)
+```
+
+Or:
+
+```sh
+$ gucumber -tags=~@slow # ignore all "slow" scenarios
+```
 
 # Copyright
 
