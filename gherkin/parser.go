@@ -242,8 +242,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 	switch parts[0] {
 	case p.translations.Given, p.translations.Then,
 		p.translations.When, p.translations.And:
-		var arg interface{}
-		var rawArg string
+		var arg StringData
 		if len(parts) < 2 {
 			return p.err("expected step text after %q", parts[0])
 		}
@@ -251,7 +250,7 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 			_, i := p.lineStripped()
 			p.unread()
 			if i > indent { // this is step argument data
-				arg, rawArg = p.consumeIndentedData(indent)
+				arg = p.consumeIndentedData(indent)
 			}
 		}
 
@@ -268,23 +267,19 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 		}
 		s := Step{
 			Filename: p.filename, Line: p.lineNo,
-			Type: stype, Text: parts[1],
-			Argument: arg, RawArgument: rawArg,
+			Type: stype, Text: parts[1], Argument: arg,
 		}
 		scenario.Steps = append(scenario.Steps, s)
 	case p.translations.Examples + ":":
-		arg, _ := p.consumeIndentedData(indent)
-		ex := arg.(TabularData)
-		scenario.Examples = ex.ToMap()
+		scenario.Examples = p.consumeIndentedData(indent)
 	default:
 		return p.err("illegal step prefix %q", parts[0])
 	}
 	return nil
 }
 
-func (p *parser) consumeIndentedData(scenarioIndent int) (interface{}, string) {
-	var stringData []string
-	var tabData TabularData
+func (p *parser) consumeIndentedData(scenarioIndent int) StringData {
+	stringData := []string{}
 	startIndent, quoted := -1, false
 	for p.nextLine() {
 		var line string
@@ -295,10 +290,7 @@ func (p *parser) consumeIndentedData(scenarioIndent int) (interface{}, string) {
 
 			if line == `"""` {
 				quoted = true // this is a docstring data block
-				stringData = []string{}
-				continue // ignore this from data
-			} else {
-				tabData = TabularData{}
+				continue      // ignore this from data
 			}
 		} else {
 			line = p.line()
@@ -320,24 +312,10 @@ func (p *parser) consumeIndentedData(scenarioIndent int) (interface{}, string) {
 
 		}
 
-		if quoted {
-			stringData = append(stringData, line)
-		} else {
-			row := strings.Split(line, "|")
-			row = row[1 : len(row)-1]
-			for i, c := range row {
-				row[i] = strings.TrimSpace(c)
-			}
-			tabData = append(tabData, row)
-		}
-
+		stringData = append(stringData, line)
 	}
 
-	data := strings.Join(stringData, "\n")
-	if quoted {
-		return data, data
-	}
-	return tabData, data
+	return StringData(strings.Join(stringData, "\n"))
 }
 
 func (p *parser) consumeTags() ([]Tag, error) {

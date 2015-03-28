@@ -18,6 +18,7 @@ const (
 	clrRed    = "31"
 	clrGreen  = "32"
 	clrYellow = "33"
+	clrCyan   = "36"
 
 	txtUnmatchInt   = `(\d+)`
 	txtUnmatchFloat = `(-?\d+(?:\.\d+)?)`
@@ -125,10 +126,10 @@ func (c *Runner) MissingMatcherStubs() string {
 			return txtUnmatchStr
 		})
 
-		switch m.Argument.(type) {
-		case gherkin.TabularData:
+		switch m.Argument[0:1] {
+		case "|":
 			args = append(args, "table [][]string")
-		case gherkin.StringData:
+		default:
 			args = append(args, "data string")
 		}
 
@@ -161,33 +162,59 @@ func (c *Runner) runFeature(f *gherkin.Feature) {
 	c.line("0;1", "Feature: %s", f.Title)
 
 	if f.Background.Steps != nil {
-		c.runScenario("Background", f, &f.Background)
+		c.runScenario("Background", f, &f.Background, false)
 	}
 
 	for _, s := range f.Scenarios {
-		c.runScenario("Scenario", f, &s)
+		c.runScenario("Scenario", f, &s, false)
 	}
 }
 
-func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenario) {
-	if len(s.Examples) > 1 { // run scenario outline data
-		for i, rows := 0, s.Examples.NumRows(); i < rows; i++ {
+func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenario, isExample bool) {
+	if s.Examples != "" { // run scenario outline data
+		exrows := strings.Split(string(s.Examples), "\n")
+
+		c.fileLine("0;1", "  %s Outline: %s", s.Filename, s.Line, s.LongestLine()+1,
+			title, s.Title)
+
+		for _, step := range s.Steps {
+			c.fileLine("0;0", "    %s %s", step.Filename, step.Line,
+				s.LongestLine()+1, step.Type, step.Text)
+		}
+
+		c.line("0", "")
+		c.line("0;1", "  Examples:")
+		c.line(clrCyan, "    %s", exrows[0])
+
+		tab := s.Examples.ToTable()
+		tabmap := tab.ToMap()
+		for i, rows := 1, len(tab); i < rows; i++ {
 			other := gherkin.Scenario{
 				Filename: s.Filename,
 				Line:     s.Line,
 				Title:    s.Title,
-				Examples: gherkin.TabularDataMap{},
+				Examples: gherkin.StringData(""),
 				Steps:    []gherkin.Step{},
 			}
 
 			for _, step := range s.Steps {
 				step.Text = reOutlineVal.ReplaceAllStringFunc(step.Text, func(t string) string {
-					return s.Examples[t[1:len(t)-1]][i]
+					return tabmap[t[1:len(t)-1]][i-1]
 				})
 				other.Steps = append(other.Steps, step)
 			}
-			c.runScenario(title, f, &other)
+
+			fc := c.FailCount
+			clr := clrGreen
+			c.runScenario(title, f, &other, true)
+
+			if fc != c.FailCount {
+				clr = clrRed
+			}
+
+			c.line(clr, "    %s", exrows[i])
 		}
+		c.line("0", "")
 		return
 	}
 
@@ -195,8 +222,10 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	skipping := false
 	clr := clrGreen
 
-	c.fileLine("0;1", "  %s: %s", s.Filename, s.Line, s.LongestLine(),
-		title, s.Title)
+	if !isExample {
+		c.fileLine("0;1", "  %s: %s", s.Filename, s.Line, s.LongestLine(),
+			title, s.Title)
+	}
 
 	for _, step := range s.Steps {
 		errCount := len(t.errors)
@@ -219,7 +248,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 					done <- true
 				}()
 
-				f, err := c.Execute(t, step.Text, step.Argument)
+				f, err := c.Execute(t, step.Text, string(step.Argument))
 				if err != nil {
 					t.Error(err)
 				}
@@ -237,14 +266,18 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 			c.Unmatched = append(c.Unmatched, &cstep)
 		}
 
-		c.fileLine(clr, "    %s %s", step.Filename, step.Line,
-			s.LongestLine(), step.Type, step.Text)
+		if !isExample {
+			c.fileLine(clr, "    %s %s", step.Filename, step.Line,
+				s.LongestLine(), step.Type, step.Text)
+		}
 
 		if len(t.errors) > errCount {
 			c.line(clrRed, "\n"+t.errors[len(t.errors)-1].message)
 		}
 	}
-	c.line("0", "")
+	if !isExample {
+		c.line("0", "")
+	}
 }
 
 var writer = ansicolor.NewAnsiColorWriter(os.Stdout)

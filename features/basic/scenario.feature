@@ -7,7 +7,7 @@ Feature: Scenarios
     When I run the "gucumber" command
     Then this scenario should execute 1 time and pass
 
-  Scenario: Scenario outline
+  Scenario Outline: Scenario outline
     Given I perform <val1> + <val2>
     Then I should get <result>
 

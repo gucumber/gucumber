@@ -6,6 +6,17 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestStringDataToTable(t *testing.T) {
+	s := StringData("| a | b |\n| 1 | 2 |\n| 3 | 4 |")
+	tab := TabularData{
+		[]string{"a", "b"},
+		[]string{"1", "2"},
+		[]string{"3", "4"},
+	}
+
+	assert.Equal(t, tab, s.ToTable())
+}
+
 func TestTabularDataToMap(t *testing.T) {
 	tab := TabularData{
 		[]string{"a", "b", "c", "d"},

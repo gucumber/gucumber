@@ -1,6 +1,9 @@
 package gherkin
 
-import "reflect"
+import (
+	"reflect"
+	"strings"
+)
 
 // Feature represents the top-most construct in a Gherkin document. A feature
 // contains one or more scenarios, which in turn contains multiple steps.
@@ -48,7 +51,7 @@ type Scenario struct {
 	Steps []Step
 
 	// Contains all scenario outline example data, if provided.
-	Examples TabularDataMap
+	Examples StringData
 
 	// The longest line length in the scenario (including title)
 	longestLine int
@@ -71,12 +74,7 @@ type Step struct {
 	Text string
 
 	// Argument represents multi-line argument data attached to a step.
-	// This value is an interface{} but is only ever set to a StringData
-	// or TabularData type.
-	Argument interface{}
-
-	// The raw argument data, if any.
-	RawArgument string
+	Argument StringData
 }
 
 // StringData is multi-line docstring text attached to a step.
@@ -94,6 +92,21 @@ type StepType string
 
 // Tag is a string representation of a tag used in Gherkin syntax.
 type Tag string
+
+// ToTable turns StringData type into a TabularData type
+func (s StringData) ToTable() TabularData {
+	var tabData TabularData
+	lines := strings.Split(string(s), "\n")
+	for _, line := range lines {
+		row := strings.Split(line, "|")
+		row = row[1 : len(row)-1]
+		for i, c := range row {
+			row[i] = strings.TrimSpace(c)
+		}
+		tabData = append(tabData, row)
+	}
+	return tabData
+}
 
 // ToMap converts a regular table to a map of header names to their row data.
 // For example:

@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+
+	"github.com/lsegal/gucumber/gherkin"
 )
 
 var (
@@ -58,7 +60,7 @@ func (c *Context) And(match string, fn interface{}) {
 	c.addStep(match, fn)
 }
 
-func (c *Context) Execute(t Tester, line string, arg interface{}) (bool, error) {
+func (c *Context) Execute(t Tester, line string, arg string) (bool, error) {
 	T = t
 	c.T = t
 
@@ -81,13 +83,13 @@ type StepDefinition struct {
 	Function reflect.Value
 }
 
-func (s *StepDefinition) CallIfMatch(c *Context, test Tester, line string, arg interface{}) (bool, error) {
+func (s *StepDefinition) CallIfMatch(c *Context, test Tester, line string, arg string) (bool, error) {
 	if match := s.Matcher.FindStringSubmatch(line); match != nil {
 		match = match[1:] // discard full line match
 
 		// adjust arity if there is step arg data
 		numArgs := len(match)
-		if arg != nil {
+		if arg != "" {
 			numArgs++
 		}
 
@@ -112,10 +114,10 @@ func (s *StepDefinition) CallIfMatch(c *Context, test Tester, line string, arg i
 			case reflect.Slice:
 				param = param.Elem()
 				if param.String() == "gherkin.TabularData" {
-					v = arg
+					v = gherkin.StringData(arg).ToTable()
 				} else if param.Kind() == reflect.Slice && param.Elem().Kind() == reflect.String {
 					// just a raw [][]string slice
-					v = arg
+					v = gherkin.StringData(arg).ToTable()
 				}
 			case reflect.Ptr:
 				if param.Elem().String() == "testing.T" {
