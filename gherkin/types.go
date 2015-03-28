@@ -175,6 +175,9 @@ func (s *Scenario) FilterMatched(filters ...string) bool {
 }
 
 func matchTags(tags []string, filters []string) bool {
+	if len(filters) == 0 { // no filters means everything passes
+		return true
+	}
 	for _, f := range filters {
 		if matchFilter(f, tags) {
 			return true // if any filter matches we succeed

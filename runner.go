@@ -148,8 +148,14 @@ func (c *Runner) MissingMatcherStubs() string {
 }
 
 func (c *Runner) run() {
+	if c.BeforeAllFilter != nil {
+		c.BeforeAllFilter()
+	}
 	for _, f := range c.Features {
 		c.runFeature(f)
+	}
+	if c.AfterAllFilter != nil {
+		c.AfterAllFilter()
 	}
 
 	c.line("0;1", "finished (%d passed, %d failed, %d skipped).\n",
@@ -159,6 +165,28 @@ func (c *Runner) run() {
 }
 
 func (c *Runner) runFeature(f *gherkin.Feature) {
+	if !f.FilterMatched(c.Filters...) {
+		result := false
+
+		// if any scenarios match, we will run those
+		for _, s := range f.Scenarios {
+			if s.FilterMatched(c.Filters...) {
+				result = true
+				break
+			}
+		}
+
+		if !result {
+			return
+		}
+	}
+
+	for k, fn := range c.BeforeFilters {
+		if f.FilterMatched(strings.Split(k, "|")...) {
+			fn()
+		}
+	}
+
 	if len(f.Tags) > 0 {
 		c.line(clrCyan, strings.Join([]string(f.Tags), " "))
 	}
@@ -171,9 +199,25 @@ func (c *Runner) runFeature(f *gherkin.Feature) {
 	for _, s := range f.Scenarios {
 		c.runScenario("Scenario", f, &s, false)
 	}
+
+	for k, fn := range c.AfterFilters {
+		if f.FilterMatched(strings.Split(k, "|")...) {
+			fn()
+		}
+	}
 }
 
 func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenario, isExample bool) {
+	if !s.FilterMatched(c.Filters...) {
+		return
+	}
+
+	for k, fn := range c.BeforeFilters {
+		if s.FilterMatched(strings.Split(k, "|")...) {
+			fn()
+		}
+	}
+
 	if s.Examples != "" { // run scenario outline data
 		exrows := strings.Split(string(s.Examples), "\n")
 
@@ -219,6 +263,13 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 			c.line(clr, "    %s", exrows[i])
 		}
 		c.line("0", "")
+
+		for k, fn := range c.AfterFilters {
+			if s.FilterMatched(strings.Split(k, "|")...) {
+				fn()
+			}
+		}
+
 		return
 	}
 
@@ -284,6 +335,12 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	}
 	if !isExample {
 		c.line("0", "")
+	}
+
+	for k, fn := range c.AfterFilters {
+		if s.FilterMatched(strings.Split(k, "|")...) {
+			fn()
+		}
 	}
 }
 

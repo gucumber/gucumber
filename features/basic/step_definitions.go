@@ -6,8 +6,12 @@ import (
 )
 
 func init() {
-	executions := 0
-	result := 0
+	executions := 100
+	result := 1
+
+	Before("@basic", func() {
+		executions = 0
+	})
 
 	Given(`^I have an initial step$`, func() {
 		assert.Equal(T, 1, 1)

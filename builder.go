@@ -15,12 +15,13 @@ const (
 	testFile         = "gucumbertest__.go"
 )
 
-func BuildAndRunDir(dir string) error {
+func BuildAndRunDir(dir string, filters []string) error {
 	defer buildCleanup(dir)
 
 	info := buildInfo{
 		Imports:      []string{},
 		FeaturesPath: fmt.Sprintf("%q", dir),
+		Filters:      filters,
 	}
 
 	goFiles, _ := filepath.Glob(filepath.Join(dir, "*.go"))
@@ -82,6 +83,7 @@ func BuildAndRunDir(dir string) error {
 type buildInfo struct {
 	Imports      []string
 	FeaturesPath string
+	Filters      []string
 }
 
 func buildCleanup(dir string) {
@@ -114,6 +116,12 @@ var (
 )
 
 func main() {
+	{{if .Filters}}
+	gucumber.GlobalContext.Filters = []string{
+	{{range $_, $f := .Filters}}"{{$f}}",
+	{{end}}
+	}
+	{{end}}
 	gucumber.GlobalContext.RunDir({{.FeaturesPath}})
 }
 `))

@@ -5,13 +5,19 @@ import (
 	"reflect"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/lsegal/gucumber/gherkin"
 )
 
 var (
-	GlobalContext = Context{Steps: []StepDefinition{}}
-	T             Tester
+	GlobalContext = Context{
+		Steps:         []StepDefinition{},
+		BeforeFilters: map[string]func(){},
+		AfterFilters:  map[string]func(){},
+		Filters:       []string{},
+	}
+	T Tester
 
 	errNoMatchingStepFns = fmt.Errorf("no functions matched step.")
 )
@@ -32,9 +38,30 @@ func And(match string, fn interface{}) {
 	GlobalContext.And(match, fn)
 }
 
+func Before(filter string, fn func()) {
+	GlobalContext.Before(filter, fn)
+}
+
+func After(filter string, fn func()) {
+	GlobalContext.After(filter, fn)
+}
+
+func BeforeMulti(filters []string, fn func()) {
+	GlobalContext.BeforeMulti(filters, fn)
+}
+
+func AfterMulti(filters []string, fn func()) {
+	GlobalContext.AfterMulti(filters, fn)
+}
+
 type Context struct {
-	Steps []StepDefinition
-	T     Tester
+	Filters         []string
+	BeforeFilters   map[string]func()
+	AfterFilters    map[string]func()
+	BeforeAllFilter func()
+	AfterAllFilter  func()
+	Steps           []StepDefinition
+	T               Tester
 }
 
 func (c *Context) addStep(match string, fn interface{}) {
@@ -58,6 +85,30 @@ func (c *Context) When(match string, fn interface{}) {
 
 func (c *Context) And(match string, fn interface{}) {
 	c.addStep(match, fn)
+}
+
+func (c *Context) Before(filter string, fn func()) {
+	c.BeforeFilters[filter] = fn
+}
+
+func (c *Context) After(filter string, fn func()) {
+	c.AfterFilters[filter] = fn
+}
+
+func (c *Context) BeforeMulti(filters []string, fn func()) {
+	c.BeforeFilters[strings.Join(filters, "|")] = fn
+}
+
+func (c *Context) AfterMulti(filters []string, fn func()) {
+	c.AfterFilters[strings.Join(filters, "|")] = fn
+}
+
+func (c *Context) BeforeAll(fn func()) {
+	c.BeforeAllFilter = fn
+}
+
+func (c *Context) AfterAll(fn func()) {
+	c.AfterAllFilter = fn
 }
 
 func (c *Context) Execute(t Tester, line string, arg string) (bool, error) {
