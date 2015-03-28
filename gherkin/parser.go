@@ -135,7 +135,7 @@ func (p *parser) consumeFeature() error {
 		Title: title, Tags: tags, Scenarios: []Scenario{},
 		Filename: p.filename, Line: p.lineNo,
 	}
-	var stags *[]Tag
+	var stags *[]string
 	seenScenario, seenBackground := false, false
 	for p.stillReading() { // consume until we get to Background or Scenario
 		// find indentation of next line
@@ -180,7 +180,7 @@ func (p *parser) consumeFeature() error {
 			if stags != nil {
 				b.Tags = *stags
 			} else {
-				b.Tags = []Tag{}
+				b.Tags = []string{}
 			}
 			f.Background = b
 			stags = nil
@@ -195,7 +195,7 @@ func (p *parser) consumeFeature() error {
 			if stags != nil {
 				s.Tags = *stags
 			} else {
-				s.Tags = []Tag{}
+				s.Tags = []string{}
 			}
 			if len(parts) > 1 {
 				s.Title = strings.TrimSpace(parts[1])
@@ -318,8 +318,8 @@ func (p *parser) consumeIndentedData(scenarioIndent int) StringData {
 	return StringData(strings.Join(stringData, "\n"))
 }
 
-func (p *parser) consumeTags() ([]Tag, error) {
-	tags := []Tag{}
+func (p *parser) consumeTags() ([]string, error) {
+	tags := []string{}
 	if !p.nextLine() {
 		return tags, nil
 	}
@@ -337,7 +337,7 @@ func (p *parser) consumeTags() ([]Tag, error) {
 		if t[0:1] != "@" {
 			return nil, p.err("invalid tag %q", t)
 		}
-		tags = append(tags, Tag(t))
+		tags = append(tags, t)
 	}
 
 	return tags, nil

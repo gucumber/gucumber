@@ -21,7 +21,7 @@ type Feature struct {
 	Description string
 
 	// Any tags associated with this feature.
-	Tags []Tag
+	Tags []string
 
 	// Any background scenario data that is executed prior to scenarios.
 	Background Scenario
@@ -45,7 +45,7 @@ type Scenario struct {
 	Title string
 
 	// Any tags associated with this scenario.
-	Tags []Tag
+	Tags []string
 
 	// All steps associated with the scenario.
 	Steps []Step
@@ -89,9 +89,6 @@ type TabularDataMap map[string][]string
 
 // StepType represents a given step type.
 type StepType string
-
-// Tag is a string representation of a tag used in Gherkin syntax.
-type Tag string
 
 // ToTable turns StringData type into a TabularData type
 func (s StringData) ToTable() TabularData {
@@ -141,6 +138,7 @@ func (t TabularDataMap) NumRows() int {
 	return len(t[reflect.ValueOf(t).MapKeys()[0].String()])
 }
 
+// LongestLine returns the longest step line in a scenario.
 func (s *Scenario) LongestLine() int {
 	if s.longestLine == 0 {
 		s.longestLine = len("Scenario: " + s.Title)
@@ -153,6 +151,7 @@ func (s *Scenario) LongestLine() int {
 	return s.longestLine
 }
 
+// LongestLine returns the longest step line in a feature.
 func (f *Feature) LongestLine() int {
 	if f.longestLine == 0 {
 		f.longestLine = len("Feature: " + f.Title)
@@ -163,4 +162,54 @@ func (f *Feature) LongestLine() int {
 		}
 	}
 	return f.longestLine
+}
+
+// FilterMatched returns true if the set of input filters match the feature's tags.
+func (f *Feature) FilterMatched(filters ...string) bool {
+	return matchTags(f.Tags, filters)
+}
+
+// FilterMatched returns true if the set of input filters match the feature's tags.
+func (s *Scenario) FilterMatched(filters ...string) bool {
+	return matchTags(s.Tags, filters)
+}
+
+func matchTags(tags []string, filters []string) bool {
+	for _, f := range filters {
+		if matchFilter(f, tags) {
+			return true // if any filter matches we succeed
+		}
+	}
+	return false
+}
+
+func matchFilter(filter string, tags []string) bool {
+	parts := strings.Split(filter, ",")
+	for _, part := range parts { // all parts must match
+		part = strings.TrimSpace(part)
+		if part == "" {
+			continue
+		}
+
+		if part[0] == '~' { // filter has to NOT match any tags
+			for _, t := range tags {
+				if part[1:] == string(t) { // tag matched, this should not happen
+					return false
+				}
+			}
+			// nothing matched, we can continue on
+		} else {
+			result := false
+			for _, t := range tags {
+				if part == string(t) { // found a match in a tag
+					result = true
+					break
+				}
+			}
+			if !result { // no matches, this filter failed
+				return false
+			}
+		}
+	}
+	return true
 }

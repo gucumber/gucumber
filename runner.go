@@ -159,6 +159,9 @@ func (c *Runner) run() {
 }
 
 func (c *Runner) runFeature(f *gherkin.Feature) {
+	if len(f.Tags) > 0 {
+		c.line(clrCyan, strings.Join([]string(f.Tags), " "))
+	}
 	c.line("0;1", "Feature: %s", f.Title)
 
 	if f.Background.Steps != nil {
@@ -174,6 +177,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	if s.Examples != "" { // run scenario outline data
 		exrows := strings.Split(string(s.Examples), "\n")
 
+		c.line(clrCyan, "  "+strings.Join([]string(s.Tags), " "))
 		c.fileLine("0;1", "  %s Outline: %s", s.Filename, s.Line, s.LongestLine()+1,
 			title, s.Title)
 
@@ -223,6 +227,9 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	clr := clrGreen
 
 	if !isExample {
+		if len(s.Tags) > 0 {
+			c.line(clrCyan, "  "+strings.Join([]string(s.Tags), " "))
+		}
 		c.fileLine("0;1", "  %s: %s", s.Filename, s.Line, s.LongestLine(),
 			title, s.Title)
 	}
