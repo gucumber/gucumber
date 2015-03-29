@@ -68,6 +68,14 @@ func init() {
 }
 ```
 
+### T?
+
+The `T` value is a [testing.T](http://golang.org/pkg/testing/#T) style
+value that represents the test context for each test. It mostly supports
+`Errorf(fmt, args...)`, but also supports other convenience methods. See
+ the [API documentation](http://godoc.org/github.com/lsegal/gucumber#TestingT)
+ for more information.
+
 ## Running
 
 To run your tests, execute:
