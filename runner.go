@@ -158,7 +158,7 @@ func (c *Runner) run() {
 		c.AfterAllFilter()
 	}
 
-	c.line("0;1", "finished (%d passed, %d failed, %d skipped).\n",
+	c.line("0;1", "Finished (%d passed, %d failed, %d skipped).\n",
 		len(c.Results)-c.FailCount-c.SkipCount, c.FailCount, c.SkipCount)
 
 	os.Exit(c.FailCount)
