@@ -59,9 +59,8 @@ func (c *Context) RunDir(dir string) (*Runner, error) {
 	}
 
 	if len(runner.Unmatched) > 0 {
-		fmt.Println("Some steps were missing, you can add them by using the following step definition stubs: ")
-		fmt.Println("")
-		fmt.Print(runner.MissingMatcherStubs())
+		runner.line("33", "Some steps were missing, you can add them by using the following step definition stubs: \n\n")
+		runner.line("33", runner.MissingMatcherStubs())
 	}
 
 	os.Exit(runner.FailCount)

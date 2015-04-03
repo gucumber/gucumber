@@ -122,6 +122,11 @@ func main() {
 	{{end}}
 	}
 	{{end}}
-	gucumber.GlobalContext.RunDir({{.FeaturesPath}})
+	r, err := gucumber.GlobalContext.RunDir({{.FeaturesPath}})
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(r.FailCount)
 }
 `))
