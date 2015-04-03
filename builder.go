@@ -106,6 +106,7 @@ package main
 
 import (
 	"github.com/lsegal/gucumber"
+	"os"
 	{{range $n, $i := .Imports}}_i{{$n}} "{{$i}}"
 	{{end}}
 )
