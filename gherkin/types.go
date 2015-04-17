@@ -105,6 +105,11 @@ func (s StringData) ToTable() TabularData {
 	return tabData
 }
 
+// IsTabular returns whether the argument data is a table
+func (s StringData) IsTabular() bool {
+	return len(s) > 0 && s[0] == '|'
+}
+
 // ToMap converts a regular table to a map of header names to their row data.
 // For example:
 //

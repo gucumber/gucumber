@@ -15,6 +15,7 @@ import (
 )
 
 const (
+	clrWhite  = "0"
 	clrRed    = "31"
 	clrGreen  = "32"
 	clrYellow = "33"
@@ -230,7 +231,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 				s.LongestLine()+1, step.Type, step.Text)
 		}
 
-		c.line("0", "")
+		c.line(clrWhite, "")
 		c.line("0;1", "  Examples:")
 		c.line(clrCyan, "    %s", exrows[0])
 
@@ -262,7 +263,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 
 			c.line(clr, "    %s", exrows[i])
 		}
-		c.line("0", "")
+		c.line(clrWhite, "")
 
 		for k, fn := range c.AfterFilters {
 			if s.FilterMatched(strings.Split(k, "|")...) {
@@ -327,6 +328,17 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 		if !isExample {
 			c.fileLine(clr, "    %s %s", step.Filename, step.Line,
 				s.LongestLine(), step.Type, step.Text)
+			if len(step.Argument) > 0 {
+				if !step.Argument.IsTabular() {
+					c.line(clrWhite, `      """`)
+				}
+				for _, l := range strings.Split(string(step.Argument), "\n") {
+					c.line(clrWhite, "      %s", l)
+				}
+				if !step.Argument.IsTabular() {
+					c.line(clrWhite, `      """`)
+				}
+			}
 		}
 
 		if len(t.errors) > errCount {
@@ -334,7 +346,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 		}
 	}
 	if !isExample {
-		c.line("0", "")
+		c.line(clrWhite, "")
 	}
 
 	for k, fn := range c.AfterFilters {
