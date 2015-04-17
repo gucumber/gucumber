@@ -64,6 +64,7 @@ func (c *Context) RunDir(dir string) (*Runner, error) {
 		fmt.Print(runner.MissingMatcherStubs())
 	}
 
+	os.Exit(runner.FailCount)
 	return runner, err
 }
 
@@ -127,10 +128,9 @@ func (c *Runner) MissingMatcherStubs() string {
 			return txtUnmatchStr
 		})
 
-		switch m.Argument[0:1] {
-		case "|":
+		if m.Argument.IsTabular() {
 			args = append(args, "table [][]string")
-		default:
+		} else {
 			args = append(args, "data string")
 		}
 
@@ -161,8 +161,6 @@ func (c *Runner) run() {
 
 	c.line("0;1", "Finished (%d passed, %d failed, %d skipped).\n",
 		len(c.Results)-c.FailCount-c.SkipCount, c.FailCount, c.SkipCount)
-
-	os.Exit(c.FailCount)
 }
 
 func (c *Runner) runFeature(f *gherkin.Feature) {
