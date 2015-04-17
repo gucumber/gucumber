@@ -371,6 +371,7 @@ func (c *Runner) fileLine(clr, text, filename string, line int, max int, args ..
 
 type Tester interface {
 	Errorf(format string, args ...interface{})
+	Skip(args ...interface{})
 }
 
 type TestingT struct {
