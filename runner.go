@@ -128,10 +128,12 @@ func (c *Runner) MissingMatcherStubs() string {
 			return txtUnmatchStr
 		})
 
-		if m.Argument.IsTabular() {
-			args = append(args, "table [][]string")
-		} else {
-			args = append(args, "data string")
+		if len(m.Argument) > 0 {
+			if m.Argument.IsTabular() {
+				args = append(args, "table [][]string")
+			} else {
+				args = append(args, "data string")
+			}
 		}
 
 		// Don't duplicate matchers. This is mostly for scenario outlines.
