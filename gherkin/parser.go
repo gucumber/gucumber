@@ -307,6 +307,11 @@ func (p *parser) consumeIndentedData(scenarioIndent int) StringData {
 			}
 
 			line = line[startIndent:]
+			if !quoted && line[0] != '|' {
+				// tabular data must start with | on each line
+				p.unread()
+				break
+			}
 			if quoted && line == `"""` { // end quote on docstring block
 				break
 			}

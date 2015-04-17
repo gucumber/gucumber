@@ -179,6 +179,9 @@ Feature: Step arguments
      hello
      world
     """
+    And some table
+    | 1 | 2 |
+    Then other text
 
   Scenario: Scenario 2
     Given some other scenario
@@ -188,6 +191,8 @@ Feature: Step arguments
 	assert.Equal(t, 2, len(f[0].Scenarios))
 	assert.Equal(t, "| 1   | 2   |\n| 3   | 4   |", f[0].Scenarios[0].Steps[0].Argument)
 	assert.Equal(t, " hello\n world", f[0].Scenarios[0].Steps[1].Argument)
+	assert.Equal(t, "| 1 | 2 |", f[0].Scenarios[0].Steps[2].Argument)
+	assert.Equal(t, "other text", f[0].Scenarios[0].Steps[3].Text)
 }
 
 func TestFailureNoFeature(t *testing.T) {
