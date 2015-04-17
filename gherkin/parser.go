@@ -247,9 +247,10 @@ func (p *parser) consumeStep(scenario *Scenario) error {
 			return p.err("expected step text after %q", parts[0])
 		}
 		if p.nextLine() {
-			_, i := p.lineStripped()
+			l, _ := p.lineStripped()
 			p.unread()
-			if i > indent { // this is step argument data
+			if len(l) > 0 && (l[0] == '|' || l == `"""`) {
+				// this is step argument data
 				arg = p.consumeIndentedData(indent)
 			}
 		}

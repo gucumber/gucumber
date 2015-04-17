@@ -154,9 +154,9 @@ Feature: Scenario outlines
     Then some result <bar>
 
     Examples:
-      | foo | bar |
-      | 1   | 2   |
-      | 3   | 4   |
+    | foo | bar |
+    | 1   | 2   |
+    | 3   | 4   |
 
   Scenario: Scenario 2
     Given some other scenario
@@ -175,10 +175,10 @@ Feature: Step arguments
                           | 1   | 2   |
                           | 3   | 4   |
     And some docstring
-      """
-       hello
-       world
-      """
+    """
+     hello
+     world
+    """
 
   Scenario: Scenario 2
     Given some other scenario
