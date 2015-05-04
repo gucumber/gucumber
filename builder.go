@@ -106,6 +106,7 @@ package main
 
 import (
 	"github.com/lsegal/gucumber"
+	"os"
 	{{range $n, $i := .Imports}}_i{{$n}} "{{$i}}"
 	{{end}}
 )
@@ -122,6 +123,11 @@ func main() {
 	{{end}}
 	}
 	{{end}}
-	gucumber.GlobalContext.RunDir({{.FeaturesPath}})
+	r, err := gucumber.GlobalContext.RunDir({{.FeaturesPath}})
+	if err != nil {
+		panic(err)
+	}
+
+	os.Exit(r.FailCount)
 }
 `))
