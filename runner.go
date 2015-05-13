@@ -171,7 +171,7 @@ func (c *Runner) runFeature(f *gherkin.Feature) {
 
 		// if any scenarios match, we will run those
 		for _, s := range f.Scenarios {
-			if s.FilterMatched(c.Filters...) {
+			if s.FilterMatched(f, c.Filters...) {
 				result = true
 				break
 			}
@@ -209,12 +209,12 @@ func (c *Runner) runFeature(f *gherkin.Feature) {
 }
 
 func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenario, isExample bool) {
-	if !s.FilterMatched(c.Filters...) {
+	if !s.FilterMatched(f, c.Filters...) {
 		return
 	}
 
 	for k, fn := range c.BeforeFilters {
-		if s.FilterMatched(strings.Split(k, "|")...) {
+		if s.FilterMatched(f, strings.Split(k, "|")...) {
 			fn()
 		}
 	}
@@ -266,7 +266,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 		c.line(clrWhite, "")
 
 		for k, fn := range c.AfterFilters {
-			if s.FilterMatched(strings.Split(k, "|")...) {
+			if s.FilterMatched(f, strings.Split(k, "|")...) {
 				fn()
 			}
 		}
@@ -350,7 +350,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	}
 
 	for k, fn := range c.AfterFilters {
-		if s.FilterMatched(strings.Split(k, "|")...) {
+		if s.FilterMatched(f, strings.Split(k, "|")...) {
 			fn()
 		}
 	}

@@ -175,8 +175,11 @@ func (f *Feature) FilterMatched(filters ...string) bool {
 }
 
 // FilterMatched returns true if the set of input filters match the feature's tags.
-func (s *Scenario) FilterMatched(filters ...string) bool {
-	return matchTags(s.Tags, filters)
+func (s *Scenario) FilterMatched(f *Feature, filters ...string) bool {
+	t := []string{}
+	t = append(t, f.Tags...)
+	t = append(t, s.Tags...)
+	return matchTags(t, filters)
 }
 
 func matchTags(tags []string, filters []string) bool {
