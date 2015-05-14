@@ -289,7 +289,7 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 	for _, step := range s.Steps {
 		errCount := len(t.errors)
 		found := false
-		if !skipping {
+		if !skipping && !t.Failed() {
 			done := make(chan bool)
 			go func() {
 				defer func() {
