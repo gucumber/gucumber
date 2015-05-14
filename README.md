@@ -19,9 +19,9 @@ Cucumber tests are made up of plain text ".feature" files and program source
 
 ## Features
 
-Put [feature files][features] `features/` with whatever organization you
-prefer. For example, you might create `features/accounts/login.feature` with
-the following text:
+Put [feature files][features] `internal/features/` with whatever organization you
+prefer. For example, you might create `internal/features/accounts/login.feature`
+with the following text:
 
 ```
 @login
@@ -36,8 +36,8 @@ Feature: Login Support
 ## Step Definitions
 
 Create step definitions to match each step in your feature files. These go
-in ".go" files in the same `features/` directory. We might create
-`features/accounts/step_definitions.go`:
+in ".go" files in the same `internal/features/` directory. We might create
+`internal/features/accounts/step_definitions.go`:
 
 ```go
 package accounts

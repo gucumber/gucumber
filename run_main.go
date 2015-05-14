@@ -27,7 +27,7 @@ func RunMain() {
 
 	var dir string
 	if flag.NArg() == 0 {
-		dir = "features"
+		dir = "internal/features"
 	} else {
 		dir = flag.Arg(0)
 	}
