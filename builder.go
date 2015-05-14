@@ -77,7 +77,11 @@ func BuildAndRunDir(dir string, filters []string) error {
 	cmd := exec.Command("go", "run", tfile)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-	return cmd.Run()
+	if err := cmd.Run(); err != nil {
+		os.Exit(1)
+	}
+
+	return nil
 }
 
 type buildInfo struct {
