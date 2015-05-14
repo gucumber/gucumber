@@ -39,13 +39,13 @@ Feature: Refund item
 	assert.Equal(t, 4, len(features[0].Scenarios[0].Steps))
 	assert.Equal(t, "@tag1", features[0].Scenarios[0].Tags[0])
 	assert.Equal(t, "@tag2", features[0].Scenarios[0].Tags[1])
-	assert.Equal(t, "Given", features[0].Scenarios[0].Steps[0].Type)
+	assert.Equal(t, StepType("Given"), features[0].Scenarios[0].Steps[0].Type)
 	assert.Equal(t, "Jeff has bought a microwave for $100", features[0].Scenarios[0].Steps[0].Text)
-	assert.Equal(t, "And", features[0].Scenarios[0].Steps[1].Type)
+	assert.Equal(t, StepType("And"), features[0].Scenarios[0].Steps[1].Type)
 	assert.Equal(t, "he has a receipt", features[0].Scenarios[0].Steps[1].Text)
-	assert.Equal(t, "When", features[0].Scenarios[0].Steps[2].Type)
+	assert.Equal(t, StepType("When"), features[0].Scenarios[0].Steps[2].Type)
 	assert.Equal(t, "he returns the microwave", features[0].Scenarios[0].Steps[2].Text)
-	assert.Equal(t, "Then", features[0].Scenarios[0].Steps[3].Type)
+	assert.Equal(t, StepType("Then"), features[0].Scenarios[0].Steps[3].Type)
 	assert.Equal(t, "Jeff should be refunded $100", features[0].Scenarios[0].Steps[3].Text)
 }
 
@@ -164,7 +164,7 @@ Feature: Scenario outlines
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, "| foo | bar |\n| 1   | 2   |\n| 3   | 4   |", f[0].Scenarios[0].Examples)
+	assert.Equal(t, StringData("| foo | bar |\n| 1   | 2   |\n| 3   | 4   |"), f[0].Scenarios[0].Examples)
 }
 
 func TestStepArguments(t *testing.T) {
@@ -189,9 +189,9 @@ Feature: Step arguments
 	f, err := Parse(s)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(f[0].Scenarios))
-	assert.Equal(t, "| 1   | 2   |\n| 3   | 4   |", f[0].Scenarios[0].Steps[0].Argument)
-	assert.Equal(t, " hello\n world", f[0].Scenarios[0].Steps[1].Argument)
-	assert.Equal(t, "| 1 | 2 |", f[0].Scenarios[0].Steps[2].Argument)
+	assert.Equal(t, StringData("| 1   | 2   |\n| 3   | 4   |"), f[0].Scenarios[0].Steps[0].Argument)
+	assert.Equal(t, StringData(" hello\n world"), f[0].Scenarios[0].Steps[1].Argument)
+	assert.Equal(t, StringData("| 1 | 2 |"), f[0].Scenarios[0].Steps[2].Argument)
 	assert.Equal(t, "other text", f[0].Scenarios[0].Steps[3].Text)
 }
 
