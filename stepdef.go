@@ -13,11 +13,15 @@ import (
 var (
 	GlobalContext = Context{
 		Steps:         []StepDefinition{},
+		World:         map[string]interface{}{},
 		BeforeFilters: map[string]func(){},
 		AfterFilters:  map[string]func(){},
 		Filters:       []string{},
 	}
+
 	T Tester
+
+	World = GlobalContext.World
 
 	errNoMatchingStepFns = fmt.Errorf("no functions matched step.")
 )
@@ -56,6 +60,7 @@ func AfterMulti(filters []string, fn func()) {
 
 type Context struct {
 	Filters         []string
+	World           map[string]interface{}
 	BeforeFilters   map[string]func()
 	AfterFilters    map[string]func()
 	BeforeAllFilter func()
