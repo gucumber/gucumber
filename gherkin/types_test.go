@@ -54,17 +54,18 @@ func TestTabularDataMapEmpty(t *testing.T) {
 }
 
 func TestScenarioFilters(t *testing.T) {
+	f := &Feature{Tags: []string{}}
 	s := Scenario{Tags: []string{"@a", "@b"}}
-	assert.True(t, s.FilterMatched())
-	assert.False(t, s.FilterMatched("a"))
-	assert.True(t, s.FilterMatched("@a"))
-	assert.True(t, s.FilterMatched("@c", "@a"))
-	assert.False(t, s.FilterMatched("~@a"))
-	assert.False(t, s.FilterMatched("@a,@c"))
-	assert.True(t, s.FilterMatched("@a,@b", "@c"))
+	assert.True(t, s.FilterMatched(f))
+	assert.False(t, s.FilterMatched(f, "a"))
+	assert.True(t, s.FilterMatched(f, "@a"))
+	assert.True(t, s.FilterMatched(f, "@c", "@a"))
+	assert.False(t, s.FilterMatched(f, "~@a"))
+	assert.False(t, s.FilterMatched(f, "@a,@c"))
+	assert.True(t, s.FilterMatched(f, "@a,@b", "@c"))
 
 	s = Scenario{Tags: []string{}}
-	assert.False(t, s.FilterMatched("@a"))
+	assert.False(t, s.FilterMatched(f, "@a"))
 }
 
 func TestFeatureFilters(t *testing.T) {
