@@ -3,11 +3,14 @@ package gherkin
 import (
 	"fmt"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
+var reNL = regexp.MustCompile(`\r?\n`)
+
 func ParseFilename(data, filename string) ([]Feature, error) {
-	lines := strings.Split(data, "\n")
+	lines := reNL.Split(data, -1)
 	p := parser{
 		lines:        lines,
 		features:     []Feature{},
