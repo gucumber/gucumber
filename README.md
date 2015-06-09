@@ -9,7 +9,7 @@ An implementation of [Cucumber][cuke] BDD-style testing for Go.
 # Installing
 
 ```sh
-$ go get github.com/lsegal/cmd/gucumber
+$ go get github.com/lsegal/gucumber/cmd/gucumber
 ```
 
 # Usage
