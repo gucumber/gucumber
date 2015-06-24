@@ -3,6 +3,7 @@ package gucumber
 import (
 	"flag"
 	"fmt"
+	"strings"
 )
 
 type filters []string
@@ -12,7 +13,7 @@ func (f *filters) String() string {
 }
 
 func (f *filters) Set(value string) error {
-	*f = append(*f, value)
+	*f = strings.Split(value, ",")
 	return nil
 }
 
