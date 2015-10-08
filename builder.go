@@ -72,9 +72,14 @@ func BuildAndRunDir(dir string, filters []string) error {
 	tplMain.Execute(f, info)
 	f.Close()
 
-	// now run the command
+	// prepare arguments
+	osArgs := os.Args[1:]
 	tfile := "./" + filepath.ToSlash(dir) + "/_test/" + testFile
-	cmd := exec.Command("go", "run", tfile)
+	args := []string{"run", tfile}
+	args = append(args, osArgs...)
+
+	// now run the command
+	cmd := exec.Command("go", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
