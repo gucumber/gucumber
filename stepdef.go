@@ -58,6 +58,10 @@ func AfterMulti(filters []string, fn func()) {
 	GlobalContext.AfterMulti(filters, fn)
 }
 
+func Execute(t Tester, line string, arg string) (bool, error) {
+	return GlobalContext.Execute(t, line, arg)
+}
+
 type Context struct {
 	Filters         []string
 	World           map[string]interface{}

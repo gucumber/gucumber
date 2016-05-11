@@ -43,6 +43,14 @@ func TestRegisterSteps(t *testing.T) {
 	assert.Equal(t, -3.14159, fl)
 }
 
+func TestGlobalExecute(t *testing.T) {
+	count := 0
+	Given(`^I have a test with (\d+)$`, func(i int) { count += i })
+	found, err := Execute(t, "I have a test with 3", "")
+	assert.NoError(t, err)
+	assert.Equal(t, true, found)
+}
+
 func TestDifferentArgCount(t *testing.T) {
 	Given(`^an arg mismatch$`, func(i int) {})
 	f, err := GlobalContext.Execute(t, "an arg mismatch", "")
