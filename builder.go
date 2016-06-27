@@ -15,7 +15,22 @@ const (
 	testFile         = "gucumbertest__.go"
 )
 
+// BuildAndRunDir builds the given director's features into Go Code.
+// Using the filters provided. An error is returned if the build fails.
 func BuildAndRunDir(dir string, filters []string) error {
+	return buildAndRunDir(dir, filters, "")
+}
+
+// BuildAndRunDirWithGoBuildTags builds the given director's features into Go
+// Code using the filters provided. Also takes a string for the build tags to
+// be passed to the go command. An error is returned if the build fails.
+//
+// If goBuildTags is empty, the param will be ignored.
+func BuildAndRunDirWithGoBuildTags(dir string, filters []string, goBuildTags string) error {
+	return buildAndRunDir(dir, filters, goBuildTags)
+}
+
+func buildAndRunDir(dir string, filters []string, goBuildTags string) error {
 	defer buildCleanup(dir)
 
 	info := buildInfo{
@@ -63,7 +78,12 @@ func BuildAndRunDir(dir string, filters []string) error {
 
 	// now run the command
 	tfile := "./" + filepath.ToSlash(dir) + "/_test/" + testFile
-	cmd := exec.Command("go", "run", tfile)
+	var cmd *exec.Cmd
+	if len(goBuildTags) > 0 {
+		cmd = exec.Command("go", "run", "-tags", goBuildTags, tfile)
+	} else {
+		cmd = exec.Command("go", "run", tfile)
+	}
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {
