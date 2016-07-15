@@ -3,8 +3,8 @@ package gucumber_test
 import (
 	"testing"
 
-	. "github.com/lsegal/gucumber"
-	"github.com/lsegal/gucumber/gherkin"
+	. "github.com/gucumber/gucumber"
+	"github.com/gucumber/gucumber/gherkin"
 	"github.com/stretchr/testify/assert"
 )
 
