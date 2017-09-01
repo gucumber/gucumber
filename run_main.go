@@ -21,7 +21,7 @@ var goBuildTags string
 
 func init() {
 	flag.Var(&filterFlag, "tags", "comma-separated list of tags to filter scenarios by")
-	flag.StringVar(&goBuildTags, "go-tags", "", "space seperated list of tags, wrap in quotes to specify multiple tags")
+	flag.StringVar(&goBuildTags, "go-tags", "", "space separated list of tags, wrap in quotes to specify multiple tags")
 }
 
 func RunMain() {
