@@ -100,14 +100,15 @@ func buildAndRunDir(dir string, filters []string, goBuildTags string) error {
 func assembleImportPath(file string) string {
 	a, _ := filepath.Abs(filepath.Dir(file))
 	absPath, fullPkg := filepath.ToSlash(a), ""
+	greedy := 0
 	for _, p := range filepath.SplitList(os.Getenv("GOPATH")) {
 		a, _ = filepath.Abs(p)
 		p = filepath.ToSlash(a)
-		if strings.HasPrefix(absPath, p) {
+		symlink, _ := filepath.EvalSymlinks(p)
+		if (strings.HasPrefix(absPath, p) || strings.HasPrefix(absPath, symlink)) && len(p) > greedy {
 			prefixPath := filepath.ToSlash(filepath.Join(p, "src"))
-			rpath, _ := filepath.Rel(prefixPath, absPath)
-			fullPkg = filepath.ToSlash(rpath)
-			break
+			fullPkg, _ = filepath.Rel(prefixPath, absPath)
+			greedy = len(p)
 		}
 	}
 	return fullPkg

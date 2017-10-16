@@ -11,9 +11,12 @@ import (
 func TestPackageImportPathIsExtractedFromFilePath(t *testing.T) {
 	//arrange
 	packageName := "github.com/username/reponame"
-	file := filepath.Join(os.Getenv("GOPATH"), "src/github.com/username/reponame/main.go")
-	//act
-	importPath := assembleImportPath(file)
-	//assert
-	assert.Equal(t, packageName, importPath)
+	gopath := os.Getenv("GOPATH")
+	for _, p := range filepath.SplitList(gopath) {
+		file := filepath.Join(p, "src/github.com/username/reponame/main.go")
+		//act
+		importPath := assembleImportPath(file)
+		//assert
+		assert.Equal(t, packageName, importPath)
+	}
 }
