@@ -62,7 +62,7 @@ func init() {
 
 	Then(`^the user should be successfully logged in$`, func() {
 		if !userIsLoggedIn() {
-			T.Fail("user should have been logged in")
+			T.Errorf("user should have been logged in")
 		}
 	})
 }
