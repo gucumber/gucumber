@@ -38,6 +38,7 @@ type Runner struct {
 	Features  []*gherkin.Feature
 	Results   []RunnerResult
 	Unmatched []*gherkin.Step
+	Failures  []string
 	FailCount int
 	SkipCount int
 }
@@ -163,6 +164,14 @@ func (c *Runner) run() {
 
 	c.line("0;1", "Finished (%d passed, %d failed, %d skipped).\n",
 		len(c.Results)-c.FailCount-c.SkipCount, c.FailCount, c.SkipCount)
+
+	if c.FailCount > 0 {
+		fmt.Println("Failures summary:")
+		for _, s := range c.Failures {
+			fmt.Println(s)
+		}
+	}
+
 }
 
 func (c *Runner) runFeature(f *gherkin.Feature) {
@@ -300,6 +309,9 @@ func (c *Runner) runScenario(title string, f *gherkin.Feature, s *gherkin.Scenar
 						skipping = true
 						clr = clrYellow
 					} else if t.Failed() {
+						c.Failures = append(c.Failures, fmt.Sprintf("- Scenario: %s \033[39;0m# %s:%d", s.Title, s.Filename, s.Line))
+						c.Failures = append(c.Failures, fmt.Sprintf("   %s  \033[39;0m# %s:%d", step.Text, step.Filename, step.Line))
+
 						c.FailCount++
 						clr = clrRed
 					}
