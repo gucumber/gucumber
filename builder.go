@@ -111,7 +111,7 @@ func assembleImportPath(file string) string {
 			greedy = len(p)
 		}
 	}
-	return fullPkg
+	return filepath.ToSlash(fullPkg)
 }
 
 type buildInfo struct {
