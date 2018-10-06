@@ -1,6 +1,7 @@
 package gucumber
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -94,10 +95,34 @@ func buildAndRunDir(dir string, filters []string, goBuildTags string) error {
 	return nil
 }
 
+// getModule reads the module from the go.mod file where the first line is:
+//
+// module some/path
+func getModule() string {
+	file, err := os.Open("go.mod")
+	defer file.Close()
+	if err != nil {
+		return ""
+	}
+	line, err := bufio.NewReader(file).ReadString('\n')
+	if err != nil {
+		return ""
+	}
+	parts := strings.Split(line, " ")
+	if len(parts) < 2 || parts[0] != "module" {
+		return ""
+	}
+	return strings.TrimSpace(parts[1])
+}
+
 // ToSlash is being used to coerce the different
 // os PathSeparators into the forward slash
 // as the forward slash is required by Go's import statement
 func assembleImportPath(file string) string {
+	if mod := getModule(); mod != "" {
+		return filepath.ToSlash(filepath.Join(mod, filepath.Dir(file)))
+	}
+
 	a, _ := filepath.Abs(filepath.Dir(file))
 	absPath, fullPkg := filepath.ToSlash(a), ""
 	greedy := 0
